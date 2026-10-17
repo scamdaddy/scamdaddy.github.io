@@ -211,6 +211,8 @@ main,
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 60px var(--gutter);
+  /* при переходе по ссылке-якорю заголовок не прячется под шапкой */
+  scroll-margin-top: 20px;
 }
 
 .section__title {
@@ -227,20 +229,12 @@ main,
   color: var(--violet);
 }
 
-/* Временная заглушка для будущих блоков */
-.placeholder {
-  padding: 28px;
-  border: 1px dashed rgba(168, 85, 247, 0.4);
-  border-radius: var(--radius);
-  color: var(--dim);
-  text-align: center;
-}
-
-/* ---------- Общие компоненты (пригодятся на этапе 2) ---------- */
+/* ---------- Общие компоненты ---------- */
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  /* на широком экране 2 колонки, на телефоне 1 */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
   gap: 22px;
 }
 
@@ -257,18 +251,48 @@ main,
   box-shadow: 0 0 0 rgba(168, 85, 247, 0);
 }
 
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .tag {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 3px 11px;
   border: 1px solid currentColor;
   border-radius: 999px;
   font-size: 12px;
+  line-height: 1.5;
   color: var(--cyan);
   text-shadow: 0 0 6px currentColor;
+  box-shadow: 0 0 8px -2px currentColor, inset 0 0 8px -4px currentColor;
 }
 
+.tag--cyan { color: var(--cyan); }
 .tag--pink { color: var(--pink); }
 .tag--violet { color: var(--violet-bright); }
+
+/* live / current — с пульсирующей точкой «в эфире» */
+.tag--live {
+  color: #5dffb0;
+}
+
+.tag--live::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 6px currentColor;
+  vertical-align: 1px;
+  animation: pulse 1.6s ease-in-out infinite;
+}
 
 .btn {
   display: inline-flex;
@@ -283,6 +307,200 @@ main,
   font-weight: 500;
   cursor: pointer;
   box-shadow: var(--glow-violet);
+}
+
+/* Скрыто с экрана, но доступно экранным чтецам */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Печатающийся текст ---------- */
+
+/* «Призрак» и живой текст лежат в одной ячейке сетки друг на друге */
+.typed {
+  display: grid;
+}
+
+.typed__ghost,
+.typed__live {
+  grid-area: 1 / 1;
+}
+
+.typed__ghost {
+  visibility: hidden;
+}
+
+.typed__ghost > div,
+.typed__live > div {
+  margin-bottom: 0.35em;
+}
+
+.typed__cursor {
+  margin-left: 1px;
+  color: var(--violet-bright);
+  text-shadow: var(--glow-violet);
+  animation: blink 1s steps(1) infinite;
+}
+
+.hl {
+  color: var(--violet-bright);
+  text-shadow: var(--glow-violet);
+}
+
+/* ---------- Глитч ---------- */
+
+.glitch {
+  position: relative;
+  align-self: flex-start;
+}
+
+/* Две копии текста: розовая и голубая. В покое невидимы */
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  text-shadow: none;
+  mix-blend-mode: screen;
+}
+
+.glitch::before { color: var(--pink); }
+.glitch::after { color: var(--cyan); }
+
+.glitch.is-glitching,
+.glitch:hover {
+  animation: glitch-shake 0.3s steps(2) infinite;
+}
+
+.glitch.is-glitching::before,
+.glitch:hover::before {
+  opacity: 0.9;
+  animation: glitch-slice-a 0.6s steps(1) infinite;
+}
+
+.glitch.is-glitching::after,
+.glitch:hover::after {
+  opacity: 0.9;
+  animation: glitch-slice-b 0.6s steps(1) infinite;
+}
+
+/* ---------- Карточки проектов ---------- */
+
+.project {
+  gap: 14px;
+}
+
+.project__num {
+  position: absolute;
+  top: 18px;
+  right: 20px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.project__title {
+  margin: 0;
+  padding-right: 32px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.03em;
+  color: #f5edff;
+  text-shadow: var(--glow-violet);
+}
+
+.project__desc {
+  margin: 0;
+  color: var(--text);
+}
+
+.project__note {
+  margin: -6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dim);
+}
+
+.project .tags {
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.project__btn {
+  align-self: flex-start;
+}
+
+.btn__arrow {
+  display: inline-block;
+  color: var(--violet-bright);
+}
+
+/* ---------- Обо мне ---------- */
+
+.about {
+  display: grid;
+  gap: 22px;
+  margin: 0;
+}
+
+.about__row {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 8px 20px;
+  align-items: baseline;
+}
+
+.about__label {
+  color: var(--muted);
+}
+
+.about__value {
+  margin: 0;
+}
+
+/* ---------- Ссылки ---------- */
+
+.footer__links {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.social {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.social__icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  border-radius: 50%;
+  background: rgba(168, 85, 247, 0.08);
+  color: var(--text);
+  box-shadow: var(--glow-violet);
+}
+
+.social__icon svg {
+  width: 24px;
+  height: 24px;
 }
 
 /* ---------- Футер ---------- */
@@ -304,6 +522,50 @@ main,
 
 @keyframes blink {
   50% { opacity: 0; }
+}
+
+@keyframes pulse {
+  50% { opacity: 0.35; transform: scale(0.7); }
+}
+
+/* Дрожание всего имени */
+@keyframes glitch-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2px, 1px); }
+  50% { transform: translate(2px, -1px); }
+  75% { transform: translate(-1px, -1px); }
+  100% { transform: translate(1px, 1px); }
+}
+
+/* Копии режутся на полосы (clip-path) и разъезжаются в стороны */
+@keyframes glitch-slice-a {
+  0% { clip-path: inset(10% 0 70% 0); transform: translate(-0.09em, 0); }
+  20% { clip-path: inset(55% 0 20% 0); transform: translate(0.075em, 0); }
+  40% { clip-path: inset(30% 0 45% 0); transform: translate(-0.06em, 0); }
+  60% { clip-path: inset(80% 0 5% 0); transform: translate(0.09em, 0); }
+  80% { clip-path: inset(0 0 85% 0); transform: translate(-0.045em, 0); }
+  100% { clip-path: inset(40% 0 40% 0); transform: translate(0.06em, 0); }
+}
+
+@keyframes glitch-slice-b {
+  0% { clip-path: inset(65% 0 15% 0); transform: translate(0.075em, 0); }
+  20% { clip-path: inset(5% 0 75% 0); transform: translate(-0.09em, 0); }
+  40% { clip-path: inset(45% 0 30% 0); transform: translate(0.06em, 0); }
+  60% { clip-path: inset(20% 0 60% 0); transform: translate(-0.075em, 0); }
+  80% { clip-path: inset(75% 0 10% 0); transform: translate(0.045em, 0); }
+  100% { clip-path: inset(30% 0 50% 0); transform: translate(-0.06em, 0); }
+}
+
+/* ---------- Телефон ---------- */
+
+@media (max-width: 640px) {
+  .about__row {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 20px;
+  }
 }
 
 /* Для тех, кто попросил систему меньше анимаций */
