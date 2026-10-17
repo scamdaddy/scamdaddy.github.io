@@ -95,7 +95,9 @@
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       // data-i18n-touch — другой текст для телефонов (например, без упоминания клавиш)
       const key = isTouch && el.dataset.i18nTouch ? el.dataset.i18nTouch : el.dataset.i18n;
-      el.textContent = t(key);
+      // Перевода нет (например, браузер взял старый файл из кэша) — оставляем текст из разметки
+      const text = t(key);
+      if (typeof text === 'string') el.textContent = text;
     });
     // Тексты в атрибутах: подсказка в поле ввода и подписи для экранных чтецов
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
