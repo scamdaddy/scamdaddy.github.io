@@ -1053,7 +1053,299 @@ main,
   filter: drop-shadow(-4px 0 0 rgba(255, 79, 216, 0.7)) drop-shadow(4px 0 0 rgba(34, 229, 255, 0.7));
 }
 
+/* ---------- CRT-включение ----------
+   Сначала в центре загорается точка, растягивается в линию на всю ширину,
+   потом чёрные шторки разъезжаются вверх и вниз, а по экрану бегут полосы развёртки.
+   Длительность (2.6 с) совпадает с CRT_MS в js/fx.js */
+
+.crt {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.crt-boot .crt {
+  display: block;
+}
+
+.crt__top,
+.crt__bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 50.5%;
+  background: #000;
+  animation: crt-shutter 2.6s var(--ease-out) forwards;
+}
+
+.crt__top {
+  top: 0;
+  transform-origin: top;
+}
+
+.crt__bottom {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+.crt__beam {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  box-shadow: 0 0 60px 20px rgba(192, 132, 252, 0.9);
+  opacity: 0;
+  transform: scale(0, 0.002);
+  animation: crt-beam 2.6s linear forwards;
+}
+
+.crt__scan {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 3px);
+  opacity: 0;
+  animation: crt-scan 2.6s linear forwards;
+}
+
+/* Пока идёт вступление, приветствие спрятано — его место занимают звёзды-«ARTEM» */
+.intro-running .hero .reveal {
+  opacity: 0;
+  translate: 0 40px;
+  filter: blur(12px);
+}
+
+/* ---------- Полоса прокрутки ---------- */
+
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left;
+  background: linear-gradient(90deg, var(--pink), var(--violet-bright), var(--cyan));
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.9);
+  pointer-events: none;
+}
+
+/* ---------- Заголовки: неоновая вывеска ---------- */
+
+/* При появлении заголовок «зажигается» с мерцанием, как лампа */
+.js .section__title.is-visible {
+  animation: neon-on 1.3s linear;
+}
+
+/* Одна буква иногда подмигивает (её выбирает js/effects.js) */
+.neon-flicker {
+  animation: letter-flicker 6s linear infinite;
+  animation-delay: var(--flicker-delay, 0s);
+}
+
+/* ---------- Волна по имени ---------- */
+
+.wave-letter {
+  display: inline-block;
+}
+
+.hero__name:hover .wave-letter {
+  animation: wave-jump 0.65s var(--ease-out) both;
+  animation-delay: calc(var(--i) * 70ms);
+}
+
+/* ---------- Сканлайны на терминале ---------- */
+
+.terminal {
+  position: relative;
+}
+
+.terminal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 3px);
+  pointer-events: none;
+  animation: crt-flicker 5s steps(1) infinite;
+}
+
+/* ---------- Неоновый курсор ---------- */
+
+.has-neon-cursor,
+.has-neon-cursor * {
+  cursor: none !important;
+}
+
+.cursor-dot,
+.cursor-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1100;
+  pointer-events: none;
+  transition: opacity 0.25s;
+}
+
+.cursor-dot {
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 6px #fff, 0 0 12px var(--violet-bright), 0 0 22px var(--pink);
+}
+
+.cursor-ring {
+  border: 1.5px solid rgba(192, 132, 252, 0.85);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.6), inset 0 0 8px rgba(168, 85, 247, 0.3);
+  transition: opacity 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+
+/* Прилипло к кнопке — горит голубым */
+.cursor-ring.is-snapped {
+  border-color: var(--cyan);
+  box-shadow: 0 0 14px rgba(34, 229, 255, 0.7), inset 0 0 10px rgba(34, 229, 255, 0.25);
+}
+
+.cursor-ring.is-pressed {
+  border-color: var(--pink);
+  box-shadow: 0 0 18px rgba(255, 79, 216, 0.9);
+}
+
+.cursor-hidden .cursor-dot,
+.cursor-hidden .cursor-ring {
+  opacity: 0;
+}
+
+/* Магнитные кнопки двигает JS через свойство translate — добавляем его в переходы */
+.btn {
+  transition: background 0.3s, border-color 0.3s, box-shadow 0.3s, transform 0.3s var(--ease-out), translate 0.25s var(--ease-out);
+}
+
+.social__icon {
+  transition: transform 0.35s var(--ease-out), color 0.3s, border-color 0.3s, box-shadow 0.3s, translate 0.25s var(--ease-out);
+}
+
+.terminal-fab {
+  transition: box-shadow 0.3s, transform 0.3s var(--ease-out), color 0.3s, translate 0.25s var(--ease-out);
+}
+
+/* ---------- Искры при клике ---------- */
+
+.sparks {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 450;
+  pointer-events: none;
+}
+
+/* ---------- НЛО ---------- */
+
+.ufo {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 40;
+  padding: 6px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 0 6px rgba(192, 132, 252, 0.8)) drop-shadow(0 0 14px rgba(34, 229, 255, 0.4));
+}
+
+.ufo svg {
+  display: block;
+}
+
+.ufo__light {
+  animation: blink 0.8s steps(1) infinite;
+}
+
+.ufo__light:nth-of-type(2) { animation-delay: 0.27s; }
+.ufo__light:nth-of-type(3) { animation-delay: 0.54s; }
+
+/* Луч света снизу — появляется, когда НЛО поймали */
+.ufo::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 75%;
+  width: 46px;
+  height: 0;
+  translate: -50% 0;
+  background: linear-gradient(rgba(93, 255, 176, 0.7), transparent);
+  clip-path: polygon(35% 0, 65% 0, 100% 100%, 0 100%);
+  transition: height 0.25s;
+}
+
+.ufo.is-caught::after {
+  height: 90px;
+}
+
+/* Пойманное НЛО улетает вверх и исчезает */
+.ufo.is-caught {
+  animation: ufo-away 0.9s var(--ease-out) 0.15s forwards;
+}
+
 /* ---------- Анимации ---------- */
+
+@keyframes crt-shutter {
+  0%, 46% { transform: scaleY(1); }
+  75%, 100% { transform: scaleY(0); }
+}
+
+@keyframes crt-beam {
+  0% { opacity: 0; transform: scale(0, 0.002); }
+  10%, 20% { opacity: 1; transform: scale(0.006, 0.004); }  /* точка в центре */
+  40% { opacity: 1; transform: scale(1, 0.003); }           /* линия на всю ширину */
+  46% { opacity: 1; transform: scale(1, 0.006); }
+  75% { opacity: 0.25; transform: scale(1, 1); }            /* раскрывается в экран — вспышка */
+  88%, 100% { opacity: 0; transform: scale(1, 1); }
+}
+
+@keyframes crt-scan {
+  0%, 60% { opacity: 0; }
+  66% { opacity: 0.9; }
+  72% { opacity: 0.4; }
+  78% { opacity: 0.8; }
+  100% { opacity: 0; }
+}
+
+@keyframes crt-flicker {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.55; }
+  48% { opacity: 1; }
+  82% { opacity: 0.75; }
+  83% { opacity: 1; }
+}
+
+@keyframes neon-on {
+  0% { opacity: 0.1; }
+  8% { opacity: 1; }
+  13% { opacity: 0.2; }
+  22% { opacity: 1; }
+  30% { opacity: 0.35; }
+  36%, 100% { opacity: 1; }
+}
+
+@keyframes letter-flicker {
+  0%, 90%, 92%, 95%, 100% { opacity: 1; }
+  91% { opacity: 0.15; }
+  93.5% { opacity: 0.3; }
+}
+
+@keyframes wave-jump {
+  0%, 100% { transform: translateY(0); }
+  35% { transform: translateY(-0.12em) scale(1.04); }
+  60% { transform: translateY(0.02em); }
+}
+
+@keyframes ufo-away {
+  to { translate: 0 -320px; scale: 0.2; opacity: 0; }
+}
 
 /* Короткие вспышки в начале и в конце перехода */
 @keyframes glitch-flash {
@@ -1168,6 +1460,11 @@ main,
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  /* Никакого CRT-вступления */
+  .crt {
+    display: none !important;
   }
 
   /* Блоки сразу на месте, без выезда и размытия */

@@ -1,0 +1,378 @@
+/* =========================================================
+   Интерактивные эффекты:
+   - вступление: CRT-включение + звёзды собираются в «ARTEM»
+   - НЛО (пятый секрет), сверхновая по клику на небо
+   - неоновый курсор, магнитные кнопки, искры при клике
+   - неоновая полоса прокрутки под шапкой
+   Всё уважает настройку «уменьшить движение».
+   ========================================================= */
+
+(function () {
+  'use strict';
+
+  const html = document.documentElement;
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  const rand = (min, max) => min + Math.random() * (max - min);
+
+  // Текст на текущем языке (язык выставляет main.js в <html lang>)
+  const tr = (key) => (window.I18N[html.lang] || window.I18N.ru)[key];
+
+  const COLORS = ['#ff4fd8', '#c084fc', '#22e5ff', '#ffffff', '#5dffb0'];
+
+  /* =========================================================
+     Вступление
+     Класс crt-boot ставит маленький скрипт в <head> — один раз за сессию.
+     Порядок: экран «включается» → звёзды слетаются в ARTEM →
+     разлетаются, и в этот момент появляется приветствие.
+     ========================================================= */
+
+  const CRT_MS = 2600;          // сколько длится CSS-анимация включения
+  const FORMATION_START = 1500; // когда звёзды начинают слетаться (экран уже раскрывается)
+
+  let introDone;
+  window.Intro = { done: new Promise((resolve) => { introDone = resolve; }) };
+
+  function runIntro() {
+    try {
+      sessionStorage.setItem('booted', '1');
+    } catch (e) {
+      // не страшно: просто покажем вступление ещё раз
+    }
+    html.classList.add('intro-running');
+
+    let finished = false;
+    const skipEvents = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
+
+    // Конец вступления — по сценарию или если посетитель не захотел ждать
+    function finish() {
+      if (finished) return;
+      finished = true;
+      skipEvents.forEach((type) => window.removeEventListener(type, finish));
+      endCrt();
+      window.starfield.skipFormation();
+      html.classList.remove('intro-running');
+      introDone();
+    }
+
+    function endCrt() {
+      html.classList.remove('crt-boot');
+      const crt = document.getElementById('crt');
+      if (crt) crt.remove();
+    }
+
+    skipEvents.forEach((type) => window.addEventListener(type, finish, { passive: true }));
+    setTimeout(endCrt, CRT_MS);
+
+    setTimeout(async () => {
+      if (finished) return;
+      // Ждём шрифт Orbitron (но не дольше секунды), иначе буквы будут «не те»
+      try {
+        await Promise.race([
+          document.fonts.load('900 100px Orbitron'),
+          new Promise((resolve) => setTimeout(resolve, 1000)),
+        ]);
+      } catch (e) {
+        // без шрифта тоже соберётся
+      }
+      if (finished) return;
+      window.starfield.formWord('ARTEM').then(finish);
+    }, FORMATION_START);
+  }
+
+  if (html.classList.contains('crt-boot') && !reducedMotion()) runIntro();
+  else {
+    html.classList.remove('crt-boot');
+    introDone();
+  }
+
+  /* =========================================================
+     Сверхновая: клик по пустому небу (не по тексту и кнопкам)
+     ========================================================= */
+
+  const NOT_SKY = 'a, button, input, label, h1, h2, h3, p, dl, li, .card, .terminal, .topbar, .footer__links, .toast, .ufo';
+
+  document.addEventListener('click', (e) => {
+    if (html.classList.contains('intro-running') || e.target.closest(NOT_SKY)) return;
+    window.starfield.supernova(e.clientX, e.clientY);
+  });
+
+  /* =========================================================
+     Искры при клике
+     Отдельный холст поверх страницы; рисуем, только пока есть искры.
+     ========================================================= */
+
+  const sparkCanvas = document.createElement('canvas');
+  sparkCanvas.className = 'sparks';
+  sparkCanvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(sparkCanvas);
+  const sctx = sparkCanvas.getContext('2d');
+  let sparks = [];
+  let sparksRunning = false;
+  let sparksLast = 0;
+
+  function sizeSparkCanvas() {
+    sparkCanvas.width = window.innerWidth;
+    sparkCanvas.height = window.innerHeight;
+  }
+  sizeSparkCanvas();
+  window.addEventListener('resize', sizeSparkCanvas);
+
+  function burst(x, y, count = 14) {
+    if (reducedMotion()) return;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = rand(0.12, 0.42);
+      sparks.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        duration: rand(380, 700),
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      });
+    }
+    if (!sparksRunning) {
+      sparksRunning = true;
+      sparksLast = performance.now();
+      requestAnimationFrame(drawSparks);
+    }
+  }
+
+  function drawSparks(now) {
+    const dt = Math.min(now - sparksLast, 50);
+    sparksLast = now;
+    sctx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+
+    sparks = sparks.filter((s) => (s.life += dt) < s.duration);
+    for (const s of sparks) {
+      s.vy += 0.0007 * dt; // лёгкая гравитация
+      s.vx *= 0.985;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+      const fade = 1 - s.life / s.duration;
+      // Искра — короткий светящийся штрих по направлению полёта
+      sctx.globalAlpha = fade;
+      sctx.strokeStyle = s.color;
+      sctx.shadowColor = s.color;
+      sctx.shadowBlur = 8;
+      sctx.lineWidth = 2;
+      sctx.lineCap = 'round';
+      sctx.beginPath();
+      sctx.moveTo(s.x, s.y);
+      sctx.lineTo(s.x - s.vx * 18, s.y - s.vy * 18);
+      sctx.stroke();
+    }
+
+    if (sparks.length) requestAnimationFrame(drawSparks);
+    else {
+      sparksRunning = false;
+      sctx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+    }
+  }
+
+  window.addEventListener('pointerdown', (e) => {
+    if (html.classList.contains('intro-running')) return;
+    burst(e.clientX, e.clientY);
+  }, { passive: true });
+
+  /* =========================================================
+     НЛО — пролетает раз в 1–2 минуты. Поймал — нашёл пятый секрет.
+     ========================================================= */
+
+  const UFO_SVG = `
+    <svg viewBox="0 0 64 34" width="64" height="34" aria-hidden="true">
+      <ellipse cx="32" cy="13" rx="11" ry="9" fill="rgba(34, 229, 255, 0.3)" stroke="#22e5ff" stroke-width="1.5"/>
+      <ellipse cx="32" cy="20" rx="29" ry="7.5" fill="#1a0b33" stroke="#c084fc" stroke-width="2"/>
+      <circle class="ufo__light" cx="17" cy="21" r="2.2" fill="#ff4fd8"/>
+      <circle class="ufo__light" cx="32" cy="23.5" r="2.2" fill="#5dffb0"/>
+      <circle class="ufo__light" cx="47" cy="21" r="2.2" fill="#ff4fd8"/>
+    </svg>`;
+
+  function scheduleUfo(delay) {
+    setTimeout(launchUfo, delay);
+  }
+
+  function launchUfo() {
+    if (document.hidden || reducedMotion() || html.classList.contains('intro-running')) {
+      scheduleUfo(rand(20000, 40000));
+      return;
+    }
+
+    const ufo = document.createElement('button');
+    ufo.type = 'button';
+    ufo.className = 'ufo';
+    ufo.setAttribute('aria-label', tr('ufo.label'));
+    ufo.innerHTML = UFO_SVG;
+    document.body.appendChild(ufo);
+
+    const fromLeft = Math.random() < 0.5;
+    const startX = fromLeft ? -80 : window.innerWidth + 16;
+    const endX = fromLeft ? window.innerWidth + 16 : -80;
+    const baseY = window.innerHeight * rand(0.1, 0.4);
+    const duration = rand(9000, 12000);
+    const start = performance.now();
+    let caught = false;
+
+    function fly(now) {
+      if (caught) return;
+      const t = (now - start) / duration;
+      if (t >= 1) {
+        ufo.remove();
+        scheduleUfo(rand(60000, 120000));
+        return;
+      }
+      // Летит с покачиванием, наклоняясь в такт
+      const x = startX + (endX - startX) * t;
+      const y = baseY + Math.sin(t * Math.PI * 6) * 14;
+      const tilt = Math.cos(t * Math.PI * 6) * 8;
+      ufo.style.transform = `translate(${x}px, ${y}px) rotate(${tilt}deg)`;
+      requestAnimationFrame(fly);
+    }
+    requestAnimationFrame(fly);
+
+    ufo.addEventListener('click', () => {
+      if (caught) return;
+      caught = true;
+      const rect = ufo.getBoundingClientRect();
+      burst(rect.left + rect.width / 2, rect.top + rect.height / 2, 28);
+      ufo.classList.add('is-caught'); // улетает вверх в луче света (CSS)
+      setTimeout(() => ufo.remove(), 900);
+      window.Effects.toast(tr('ufo.caught'));
+      window.Terminal.markSecret('ufo');
+      scheduleUfo(rand(60000, 120000));
+    });
+  }
+
+  scheduleUfo(rand(20000, 35000));
+
+  /* =========================================================
+     Неоновый курсор: точка + кольцо, которое догоняет точку.
+     Над кнопками кольцо «прилипает» и обнимает кнопку.
+     Только для мыши и только если анимации не выключены.
+     ========================================================= */
+
+  const SNAP = '.btn, .social__icon, .terminal-fab, .lang-switch__btn, .progress-trigger, .terminal__close, .ufo';
+  const HOVER = 'a, button, input, .tag, .card';
+
+  if (finePointer && !reducedMotion()) {
+    html.classList.add('has-neon-cursor');
+
+    const dot = document.createElement('div');
+    dot.className = 'cursor-dot';
+    const ring = document.createElement('div');
+    ring.className = 'cursor-ring';
+    document.body.append(ring, dot);
+
+    const pos = { x: -100, y: -100 };
+    const ringState = { x: -100, y: -100, w: 34, h: 34 };
+    let snapEl = null;
+    let hovering = false;
+
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      pos.x = e.clientX;
+      pos.y = e.clientY;
+      snapEl = e.target.closest(SNAP);
+      hovering = !!e.target.closest(HOVER);
+      dot.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+      html.classList.remove('cursor-hidden');
+    }, { passive: true });
+
+    document.addEventListener('mouseout', (e) => {
+      if (!e.relatedTarget) html.classList.add('cursor-hidden');
+    });
+    window.addEventListener('pointerdown', () => ring.classList.add('is-pressed'));
+    window.addEventListener('pointerup', () => ring.classList.remove('is-pressed'));
+
+    function loop() {
+      let tx = pos.x;
+      let ty = pos.y;
+      let tw = hovering ? 52 : 34;
+      let th = tw;
+      let radius = '50%';
+
+      if (snapEl && snapEl.isConnected) {
+        const r = snapEl.getBoundingClientRect();
+        tx = r.left + r.width / 2;
+        ty = r.top + r.height / 2;
+        tw = r.width + 12;
+        th = r.height + 12;
+        radius = getComputedStyle(snapEl).borderRadius;
+      }
+
+      // Плавно догоняем цель: 20% пути за кадр
+      ringState.x += (tx - ringState.x) * 0.2;
+      ringState.y += (ty - ringState.y) * 0.2;
+      ringState.w += (tw - ringState.w) * 0.2;
+      ringState.h += (th - ringState.h) * 0.2;
+
+      ring.style.width = `${ringState.w}px`;
+      ring.style.height = `${ringState.h}px`;
+      ring.style.borderRadius = radius === '0px' ? '12px' : radius;
+      ring.style.transform = `translate(${ringState.x - ringState.w / 2}px, ${ringState.y - ringState.h / 2}px)`;
+      ring.classList.toggle('is-snapped', !!snapEl);
+
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    /* ---------- Магнитные кнопки ----------
+       Кнопка рядом с курсором слегка тянется к нему (свойство translate). */
+    const MAGNETS = '.btn, .social__icon, .terminal-fab';
+    let magnetFrame = 0;
+
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse' || magnetFrame) return;
+      magnetFrame = requestAnimationFrame(() => {
+        magnetFrame = 0;
+        const elements = [...document.querySelectorAll(MAGNETS)];
+        // Сначала все измерения, потом все изменения — так браузер не пересчитывает страницу лишний раз
+        const moves = elements.map((el) => {
+          const m = el._magnet || { x: 0, y: 0 };
+          const r = el.getBoundingClientRect();
+          if (!r.width) return [el, m, 0, 0];
+          const cx = r.left + r.width / 2 - m.x;
+          const cy = r.top + r.height / 2 - m.y;
+          const dx = pos.x - cx;
+          const dy = pos.y - cy;
+          const reach = Math.max(r.width, r.height) / 2 + 40;
+          if (Math.hypot(dx, dy) > reach) return [el, m, 0, 0];
+          const clamp = (v) => Math.max(-12, Math.min(12, v));
+          return [el, m, clamp(dx * 0.3), clamp(dy * 0.35)];
+        });
+        moves.forEach(([el, m, x, y]) => {
+          m.x = x;
+          m.y = y;
+          el._magnet = m;
+          el.style.translate = x || y ? `${x.toFixed(1)}px ${y.toFixed(1)}px` : '';
+        });
+      });
+    }, { passive: true });
+  }
+
+  /* =========================================================
+     Полоса прокрутки под шапкой
+     ========================================================= */
+
+  const progressBar = document.getElementById('scroll-progress');
+  let progressFrame = 0;
+
+  function updateProgress() {
+    progressFrame = 0;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const value = max > 0 ? window.scrollY / max : 0;
+    progressBar.style.transform = `scaleX(${value.toFixed(4)})`;
+  }
+
+  if (progressBar) {
+    window.addEventListener('scroll', () => {
+      if (!progressFrame) progressFrame = requestAnimationFrame(updateProgress);
+    }, { passive: true });
+    window.addEventListener('resize', updateProgress);
+    updateProgress();
+  }
+
+  // Для отладки в консоли: Fx.launchUfo() — запустить НЛО прямо сейчас
+  window.Fx = { burst, launchUfo };
+})();

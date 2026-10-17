@@ -13,12 +13,14 @@ window.Terminal = (function () {
   const RUNAWAY_URL = 'https://runaway-rose.vercel.app/';
 
   // Секретные команды, которые считаются в «найдено секретов»
-  const SECRETS = ['sudo', 'coffee', 'hack', 'money'];
+  // ufo — не команда: это НЛО, которое иногда пролетает по небу (js/fx.js)
+  const SECRETS = ['sudo', 'coffee', 'hack', 'money', 'ufo'];
   const SECRETS_KEY = 'secrets';
 
   // Подсказки к секретам: если ввести похожее слово, терминал намекнёт на команду.
   // Проверяются по порядку, срабатывает первая подходящая
   const SECRET_HINTS = [
+    { cmd: 'ufo', key: 'term.ufoHint', words: /ufo|alien|space|нло|пришел|инопланет|космос|тарелк/i },
     { cmd: 'sudo', emoji: '🔐', words: /password|root|admin|access|пароль|админ|права|доступ|^su$/i },
     { cmd: 'coffee', emoji: '☕', words: /coff|tea|tired|sleep|energy|latte|espresso|кофе|кофей|чай|устал|спать|сонн|энерг|латте|эспрессо/i },
     { cmd: 'hack', emoji: '🕶️', words: /matrix|hacker|virus|exploit|mainframe|firewall|neo|матриц|взлом|хакер|вирус|нео/i },
@@ -220,9 +222,9 @@ window.Terminal = (function () {
       Promise.resolve(command()).then(() => markSecret(name));
     } else {
       const hint = SECRET_HINTS.find((h) => h.words.test(text));
-      const message = hint
-        ? app.t('term.secretHint').replace('{emoji}', hint.emoji).replace('{target}', hint.cmd)
-        : app.t('term.unknown');
+      let message = app.t('term.unknown');
+      if (hint && hint.key) message = app.t(hint.key);
+      else if (hint) message = app.t('term.secretHint').replace('{emoji}', hint.emoji).replace('{target}', hint.cmd);
       print(message.replace('{cmd}', app.esc(name)), 'term-error');
     }
   }
@@ -455,5 +457,5 @@ window.Terminal = (function () {
     });
   }
 
-  return { init, run, open, close, moneyRain };
+  return { init, run, open, close, moneyRain, markSecret };
 })();

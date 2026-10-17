@@ -35,8 +35,17 @@
   <meta name="twitter:description" content="вайбкодер. мечтаю заработать много денег и исчезнуть, а пока — просто чиллю.">
   <meta name="twitter:image" content="https://scamdaddy.github.io/assets/og-image.png">
 
-  <!-- Метка «JavaScript работает»: только тогда прячем блоки до появления при прокрутке -->
-  <script>document.documentElement.classList.add('js');</script>
+  <!-- Метка «JavaScript работает»: только тогда прячем блоки до появления при прокрутке.
+       crt-boot — CRT-включение и звёзды-«ARTEM»: один раз за сессию и только если анимации не выключены.
+       Ставим это здесь, в <head>, чтобы страница не успела мелькнуть до начала эффекта -->
+  <script>
+    document.documentElement.classList.add('js');
+    try {
+      if (!sessionStorage.getItem('booted') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('crt-boot');
+      }
+    } catch (e) {}
+  </script>
 
   <!-- Шрифты: Orbitron для заголовков (латиница), Unbounded подхватывает кириллицу,
        JetBrains Mono для основного текста -->
@@ -47,10 +56,20 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- CRT-включение: чёрные шторки разъезжаются от светящейся линии (js/fx.js, css) -->
+  <div class="crt" id="crt" aria-hidden="true">
+    <div class="crt__top"></div>
+    <div class="crt__bottom"></div>
+    <div class="crt__beam"></div>
+    <div class="crt__scan"></div>
+  </div>
+
   <!-- Звёздное небо рисуется на этом canvas (js/stars.js) -->
   <canvas id="stars" aria-hidden="true"></canvas>
 
   <header class="topbar">
+    <!-- Неоновая полоса: сколько страницы пролистано -->
+    <div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
     <a class="topbar__logo" href="#hero">@scamdaddy<span class="topbar__cursor">_</span></a>
 
     <!-- Переключатель языка: выбор запоминается (js/main.js) -->
@@ -130,6 +149,7 @@
   <script src="js/projects.js"></script>
   <script src="js/effects.js"></script>
   <script src="js/terminal.js"></script>
+  <script src="js/fx.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

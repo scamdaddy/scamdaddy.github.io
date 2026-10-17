@@ -162,6 +162,7 @@ window.Effects = (function () {
           const el = entry.target;
           el.style.setProperty('--reveal-delay', `${Math.min(order++ * 90, 450)}ms`);
           el.classList.add('is-visible');
+          if (el.classList.contains('section__title')) decryptTitle(el);
           observer.unobserve(el); // показали один раз — больше не следим
         });
       }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
@@ -258,6 +259,87 @@ window.Effects = (function () {
     });
   }
 
+  /* ---------- Расшифровка заголовков ----------
+     Заголовок сначала мелькает случайными символами, потом слева направо
+     «расшифровывается» в настоящий текст — как в фильмах про хакеров.
+     После этого одна случайная буква иногда «подмигивает», как неоновая лампа. */
+  const GLYPHS = '#%&@$*!?<>/\\=+01ЖФЯ';
+
+  function decryptTitle(title) {
+    const target = title.querySelector('[data-i18n]');
+    if (!target) return;
+    const text = target.dataset.finalText || target.textContent;
+    target.dataset.finalText = text;
+    clearInterval(target._decryptTimer);
+
+    if (reducedMotion()) {
+      target.textContent = text;
+      return;
+    }
+
+    const chars = Array.from(text);
+    const duration = 750;
+    const start = performance.now();
+
+    target._decryptTimer = setInterval(() => {
+      const progress = Math.min((performance.now() - start) / duration, 1);
+      const revealed = Math.floor(progress * chars.length);
+      target.textContent = chars
+        .map((ch, i) => (i < revealed || ch === ' ' ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)]))
+        .join('');
+      if (progress === 1) {
+        clearInterval(target._decryptTimer);
+        flickerLetter(target, chars);
+      }
+    }, 40);
+  }
+
+  // Одна буква заголовка время от времени мигает (CSS-класс .neon-flicker)
+  function flickerLetter(target, chars) {
+    const letters = chars.map((ch, i) => (ch === ' ' ? -1 : i)).filter((i) => i >= 0);
+    if (!letters.length) return;
+    const pick = letters[Math.floor(Math.random() * letters.length)];
+    target.textContent = '';
+    chars.forEach((ch, i) => {
+      if (i === pick) {
+        const span = document.createElement('span');
+        span.className = 'neon-flicker';
+        span.style.setProperty('--flicker-delay', `${rand(0, 5).toFixed(1)}s`);
+        span.textContent = ch;
+        target.appendChild(span);
+      } else {
+        target.appendChild(document.createTextNode(ch));
+      }
+    });
+  }
+
+  // Новый язык — новый текст: запоминаем его и расшифровываем заново
+  function retitle(title) {
+    const target = title.querySelector('[data-i18n]');
+    if (!target) return;
+    delete target.dataset.finalText;
+    if (title.classList.contains('is-visible')) decryptTitle(title);
+  }
+
+  /* ---------- Волна по имени ----------
+     Каждая буква — отдельный span с номером (--i): при наведении
+     буквы подпрыгивают по очереди (анимация в CSS). */
+  function waveLetters(el) {
+    if (!el || el.dataset.waved) return;
+    el.dataset.waved = '1';
+    const text = el.textContent;
+    el.setAttribute('aria-label', text);
+    el.textContent = '';
+    Array.from(text).forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.className = 'wave-letter';
+      span.setAttribute('aria-hidden', 'true');
+      span.style.setProperty('--i', i);
+      span.textContent = ch;
+      el.appendChild(span);
+    });
+  }
+
   /* ---------- Всплывающая подсказка ----------
      Неоновая плашка в углу, сама исчезает через несколько секунд.
      Одновременно показывается только одна. */
@@ -280,5 +362,8 @@ window.Effects = (function () {
     toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), duration);
   }
 
-  return { typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition, toast };
+  return {
+    typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition, toast,
+    decryptTitle, retitle, waveLetters,
+  };
 })();

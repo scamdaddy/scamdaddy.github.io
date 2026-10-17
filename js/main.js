@@ -106,10 +106,13 @@
     });
   }
 
+  // Приветствие начинает печататься, когда закончится вступление (js/fx.js)
   function renderGreeting() {
-    stopTyping();
-    stopTyping = window.Effects.typewriter(document.getElementById('greeting'), t('hero.greeting'), {
-      startDelay: 500,
+    window.Intro.done.then(() => {
+      stopTyping();
+      stopTyping = window.Effects.typewriter(document.getElementById('greeting'), t('hero.greeting'), {
+        startDelay: 500,
+      });
     });
   }
 
@@ -186,6 +189,7 @@
     saveLang(lang);
     renderAll();
     window.Effects.glitchOnce(document.querySelector('.hero__name'));
+    document.querySelectorAll('.section__title').forEach(window.Effects.retitle);
   }
 
   function toggleLang() {
@@ -196,6 +200,7 @@
 
   renderAll();
   window.Effects.cardHover(document.getElementById('project-list'));
+  window.Effects.waveLetters(document.querySelector('.hero__name'));
 
   // Глитч-переход при клике на кнопку проекта: сначала экран «ломается»,
   // потом открывается новая вкладка
