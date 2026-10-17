@@ -54,8 +54,19 @@
 
   function renderStaticTexts() {
     document.documentElement.lang = lang;
+    // Подсвечиваем текущий язык в переключателе
+    document.querySelectorAll('.lang-switch__btn').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.lang === lang);
+    });
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = t(el.dataset.i18n);
+    });
+    // Тексты в атрибутах: подсказка в поле ввода и подписи для экранных чтецов
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      el.placeholder = t(el.dataset.i18nPlaceholder);
+    });
+    document.querySelectorAll('[data-i18n-label]').forEach((el) => {
+      el.setAttribute('aria-label', t(el.dataset.i18nLabel));
     });
   }
 
@@ -111,10 +122,25 @@
     window.Effects.reveal(document);
   }
 
+  // Смена языка: перерисовываем все тексты
+  // (этап 5: переключатель в углу, запоминание и язык браузера по умолчанию)
+  function setLang(newLang) {
+    if (!window.I18N[newLang] || newLang === lang) return;
+    lang = newLang;
+    renderAll();
+  }
+
+  function toggleLang() {
+    setLang(lang === 'ru' ? 'en' : 'ru');
+  }
+
   // ---------- Запуск ----------
 
   renderAll();
   window.Effects.spotlight(document.getElementById('project-list'));
+
+  // Терминалу отдаём помощников, чтобы он говорил на текущем языке
+  window.Terminal.init({ t, pick, esc, toggleLang });
 
   // Глитч включаем, когда загрузится шрифт имени
   const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();

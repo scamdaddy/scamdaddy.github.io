@@ -55,6 +55,27 @@
       <div id="about-list"></div>
     </section>
 
+    <!-- Мини-терминал (js/terminal.js). По клавише ~ всплывает поверх страницы -->
+    <section class="section" id="terminal-section">
+      <h2 class="section__title reveal"><span class="section__hash">//</span> <span data-i18n="term.section">терминал</span></h2>
+      <p class="section__hint reveal" data-i18n="term.hint">пиши команды прямо здесь или нажми ~ в любом месте страницы</p>
+
+      <div class="terminal reveal" id="terminal">
+        <div class="terminal__bar">
+          <span class="terminal__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="terminal__title">guest@artem: ~</span>
+          <button class="terminal__close" id="terminal-close" type="button" data-i18n-label="term.close" aria-label="закрыть терминал">esc</button>
+        </div>
+        <div class="terminal__output" id="terminal-output" role="log" aria-live="polite"></div>
+        <form class="terminal__line" id="terminal-form">
+          <label class="terminal__prompt" for="terminal-input">guest@artem:~$</label>
+          <input class="terminal__input" id="terminal-input" type="text"
+                 autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+                 enterkeyhint="send" data-i18n-placeholder="term.placeholder" placeholder="введи help">
+        </form>
+      </div>
+    </section>
+
     <!-- Место под анонимные сообщения — отдельный этап, пока скрыто -->
     <section class="section" id="anon-messages" hidden></section>
   </main>
@@ -69,14 +90,18 @@
     <p class="footer__credit reveal" data-i18n="footer.credit">сделано Artem вместе с Claude ❤️</p>
   </footer>
 
-  <!-- Место под мини-терминал (этап 4) -->
-  <div id="terminal-root"></div>
+  <!-- Кнопка терминала (удобно на телефоне, где нет клавиши ~) -->
+  <button class="terminal-fab" id="terminal-fab" type="button" data-i18n-label="term.open" aria-label="открыть терминал">&gt;_</button>
+
+  <!-- Затемнение под всплывшим терминалом -->
+  <div class="terminal-backdrop" id="terminal-backdrop"></div>
 
   <!-- Порядок важен: сначала данные, потом код, который их использует -->
   <script src="js/stars.js"></script>
   <script src="js/i18n.js"></script>
   <script src="js/projects.js"></script>
   <script src="js/effects.js"></script>
+  <script src="js/terminal.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>

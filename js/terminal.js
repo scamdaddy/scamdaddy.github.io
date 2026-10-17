@@ -1,0 +1,310 @@
+/* =========================================================
+   Мини-терминал.
+   Одно и то же окно живёт внизу страницы, а по клавише ~
+   (или кнопке >_ на телефоне) всплывает поверх всего.
+   Ответы берутся из js/i18n.js на текущем языке.
+   ========================================================= */
+
+window.Terminal = (function () {
+  'use strict';
+
+  // Команды, которые показываются в help и дополняются по Tab
+  const PUBLIC = ['help', 'about', 'projects', 'play', 'links', 'lang', 'clear'];
+  const RUNAWAY_URL = 'https://runaway-rose.vercel.app/';
+
+  let app;        // помощники из main.js: t, pick, esc, toggleLang
+  let section, box, output, form, input, backdrop, fab;
+  const history = [];
+  let historyIndex = 0;
+
+  const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, reducedMotion() ? 0 : ms));
+
+  // ---------- Вывод ----------
+
+  function print(html, className) {
+    const line = document.createElement('div');
+    line.className = 'term-line' + (className ? ' ' + className : '');
+    line.innerHTML = html;
+    output.appendChild(line);
+    output.scrollTop = output.scrollHeight;
+    return line;
+  }
+
+  function link(url) {
+    const text = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+    return `<a href="${app.esc(url)}" target="_blank" rel="noopener noreferrer">${app.esc(text)}</a>`;
+  }
+
+  // Выравнивание колонок пробелами, как в настоящей консоли
+  function pad(text, width) {
+    return app.esc(text) + ' '.repeat(Math.max(1, width - text.length));
+  }
+
+  // ---------- Команды ----------
+
+  const commands = {
+    help() {
+      app.t('term.help').forEach(([name, desc]) => {
+        print(`<span class="term-cmd">${pad(name, 10)}</span>${app.esc(desc)}`);
+      });
+      print(app.t('term.helpHint'), 'term-muted');
+    },
+
+    about() {
+      app.t('about.items').forEach((item) => {
+        const value = item.tags ? item.tags.join(' • ') : item.text;
+        print(`<span class="term-accent">&gt; ${app.esc(item.label)}:</span> ${app.esc(value)}`);
+      });
+    },
+
+    projects() {
+      window.PROJECTS.forEach((p, i) => {
+        const num = String(i + 1).padStart(2, '0');
+        print(`<span class="term-muted">${num}</span> <span class="term-accent">${pad(app.pick(p.title), 14)}</span>${link(p.url)}`);
+      });
+    },
+
+    play() {
+      // Открываем сразу по нажатию Enter — так браузер не считает это всплывающим окном
+      window.open(RUNAWAY_URL, '_blank', 'noopener');
+      print(`${app.t('term.play')} ${link(RUNAWAY_URL)}`);
+    },
+
+    links() {
+      window.SOCIAL_LINKS.forEach((l) => {
+        print(`<span class="term-accent">${pad(l.name, 10)}</span>${link(l.url)}`);
+      });
+    },
+
+    lang() {
+      app.toggleLang();
+      print(app.t('term.lang'));
+    },
+
+    clear() {
+      output.innerHTML = '';
+    },
+
+    // ---------- Секретные команды ----------
+
+    async sudo() {
+      const [prompt, answer] = app.t('term.sudo');
+      print(prompt, 'term-muted');
+      await sleep(700);
+      print(answer, 'term-error');
+    },
+
+    async coffee() {
+      print(app.t('term.coffee.start'));
+      print([
+        '      ( (',
+        '       ) )',
+        '    ........',
+        '    |      |]',
+        '    \\      /',
+        '     `----\'',
+      ].join('\n'), 'term-accent');
+
+      // Шкала кофеина заполняется постепенно
+      const bar = print('');
+      for (let step = 0; step <= 10; step++) {
+        const filled = '█'.repeat(step) + '░'.repeat(10 - step);
+        bar.textContent = `${app.t('term.coffee.level')}: [${filled}] ${step * 10}%`;
+        await sleep(110);
+      }
+      print(app.t('term.coffee.done'), 'term-cmd');
+    },
+
+    async hack() {
+      const [first, second, last] = app.t('term.hack');
+      print(first, 'term-hack');
+      await sleep(500);
+      print(second, 'term-hack');
+      if (!reducedMotion()) await matrixRain(3000);
+      print(last, 'term-hack');
+    },
+
+    exit() {
+      close();
+    },
+  };
+
+  // ---------- Запуск команды ----------
+
+  function run(raw) {
+    const text = raw.trim();
+    print(`<span class="term-prompt">guest@artem:~$</span> ${app.esc(text)}`, 'term-echo');
+    if (!text) return;
+
+    history.push(text);
+    historyIndex = history.length;
+
+    const name = text.split(/\s+/)[0].toLowerCase();
+    const command = Object.prototype.hasOwnProperty.call(commands, name) ? commands[name] : null;
+
+    if (command) command();
+    else print(app.t('term.unknown').replace('{cmd}', app.esc(name)), 'term-error');
+  }
+
+  // ---------- Автодополнение по Tab ----------
+
+  function autocomplete() {
+    const value = input.value.trim().toLowerCase();
+    const matches = PUBLIC.filter((cmd) => cmd.startsWith(value));
+    if (matches.length === 1) {
+      input.value = matches[0];
+    } else if (matches.length > 1) {
+      print(`<span class="term-prompt">guest@artem:~$</span> ${app.esc(input.value)}`, 'term-echo');
+      print(matches.map((m) => `<span class="term-cmd">${m}</span>`).join('   '));
+    }
+  }
+
+  // ---------- Клавиши в поле ввода ----------
+
+  function onInputKey(e) {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault(); // иначе курсор прыгнет в начало строки
+      if (historyIndex > 0) {
+        historyIndex--;
+        input.value = history[historyIndex];
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (historyIndex < history.length - 1) {
+        historyIndex++;
+        input.value = history[historyIndex];
+      } else {
+        historyIndex = history.length;
+        input.value = '';
+      }
+    } else if (e.key === 'Tab' && input.value.trim()) {
+      // Пустой Tab не перехватываем — по нему можно уйти с поля клавиатурой
+      e.preventDefault();
+      autocomplete();
+    }
+  }
+
+  // ---------- Всплывающий режим ----------
+
+  function isOpen() {
+    return box.classList.contains('is-floating');
+  }
+
+  function open() {
+    if (isOpen()) return;
+    // Держим место на странице, пока окно «улетело» наверх
+    section.style.minHeight = `${section.offsetHeight}px`;
+    box.classList.add('is-floating', 'is-visible');
+    backdrop.classList.add('is-open');
+    fab.hidden = true;
+    input.focus();
+  }
+
+  function close() {
+    if (!isOpen()) return;
+    box.classList.remove('is-floating');
+    backdrop.classList.remove('is-open');
+    section.style.minHeight = '';
+    fab.hidden = false;
+    input.blur();
+  }
+
+  function onGlobalKey(e) {
+    // ~ и Ё на одной клавише — code одинаковый при любой раскладке.
+    // Символ проверяем тоже: некоторые клавиатуры и программы не передают code
+    const isTilde = e.code === 'Backquote' || e.key === '`' || e.key === '~';
+    if (isTilde && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      const inOtherField = e.target.matches('input, textarea, [contenteditable]') && e.target !== input;
+      // В непустом поле терминала даём напечатать символ
+      if (inOtherField || (e.target === input && input.value)) return;
+      e.preventDefault();
+      if (isOpen()) close();
+      else open();
+    } else if (e.key === 'Escape' && isOpen()) {
+      close();
+    }
+  }
+
+  // ---------- Секрет: «матрица» ----------
+
+  function matrixRain(duration) {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      canvas.className = 'matrix';
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      const width = (canvas.width = window.innerWidth);
+      const height = (canvas.height = window.innerHeight);
+      const size = 16;
+      const columns = Math.ceil(width / size);
+      const drops = Array.from({ length: columns }, () => Math.random() * -40);
+      const chars = 'アイウエオカキクケコサシスセソタチツテト0123456789ARTEM';
+      const start = performance.now();
+
+      function draw(now) {
+        // Полупрозрачная заливка оставляет за буквами светящийся хвост
+        ctx.fillStyle = 'rgba(5, 3, 10, 0.14)';
+        ctx.fillRect(0, 0, width, height);
+        ctx.font = `${size}px "JetBrains Mono", monospace`;
+
+        for (let i = 0; i < columns; i++) {
+          const char = chars[Math.floor(Math.random() * chars.length)];
+          const y = drops[i] * size;
+          ctx.fillStyle = Math.random() < 0.04 ? '#ffffff' : i % 6 === 0 ? '#c084fc' : '#5dffb0';
+          ctx.fillText(char, i * size, y);
+          if (y > height && Math.random() > 0.97) drops[i] = 0;
+          drops[i]++;
+        }
+
+        if (now - start < duration) {
+          requestAnimationFrame(draw);
+        } else {
+          canvas.classList.add('is-fading');
+          setTimeout(() => {
+            canvas.remove();
+            resolve();
+          }, 600);
+        }
+      }
+
+      requestAnimationFrame(draw);
+    });
+  }
+
+  // ---------- Запуск ----------
+
+  function init(helpers) {
+    app = helpers;
+    section = document.getElementById('terminal-section');
+    box = document.getElementById('terminal');
+    output = document.getElementById('terminal-output');
+    form = document.getElementById('terminal-form');
+    input = document.getElementById('terminal-input');
+    backdrop = document.getElementById('terminal-backdrop');
+    fab = document.getElementById('terminal-fab');
+
+    print(app.t('term.welcome'), 'term-muted');
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      run(input.value);
+      input.value = '';
+    });
+
+    input.addEventListener('keydown', onInputKey);
+    document.addEventListener('keydown', onGlobalKey);
+    backdrop.addEventListener('click', close);
+    fab.addEventListener('click', open);
+    document.getElementById('terminal-close').addEventListener('click', close);
+
+    // Клик по окну ставит курсор в поле ввода (но не мешает выделять текст и жать ссылки)
+    box.addEventListener('click', (e) => {
+      if (e.target.closest('a, button') || window.getSelection().toString()) return;
+      input.focus({ preventScroll: true });
+    });
+  }
+
+  return { init, run, open, close };
+})();
