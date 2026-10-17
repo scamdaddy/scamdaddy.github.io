@@ -198,20 +198,65 @@
     B: '#2e1065', // худи
     C: '#ece6ff', // шнурки капюшона
     P: '#ff4fd8', // неоновая полоска
+    K: '#7c3aed', // шляпа ведьмы
+    O: '#ff7a1a', // оранжевая лента на шляпе
+    R: '#e11d48', // шапка Деда Мороза
+    W: '#f8fafc', // белый мех и помпон
+  };
+
+  // Сезонные шляпы. top — с какой строки начинается шляпа:
+  // отрицательные строки торчат над головой, остальные ложатся поверх аватара (точка — не трогать)
+  const AVATAR_HATS = {
+    halloween: {
+      top: -4,
+      rows: [
+        '.........KK.....',
+        '........KKK.....',
+        '.......KKKK.....',
+        '......KKKKKK....',
+        '.....OOOOOOOO...',
+        '..KKKKKKKKKKKK..',
+      ],
+    },
+    newyear: {
+      top: -3,
+      rows: [
+        '...........WW...',
+        '........RRRWW...',
+        '......RRRRRR....',
+        '....RRRRRRRR....',
+        '...WWWWWWWWWW...',
+      ],
+    },
   };
 
   function renderAvatar() {
+    const hat = AVATAR_HATS[window.SEASON];
+    const top = hat ? hat.top : 0;
+    const rows = {};
+    AVATAR_MAP.forEach((row, y) => { rows[y] = row; });
+    if (hat) {
+      hat.rows.forEach((hatRow, i) => {
+        const y = top + i;
+        const base = rows[y] || '.'.repeat(16);
+        rows[y] = Array.from(base).map((ch, x) => (hatRow[x] !== '.' ? hatRow[x] : ch)).join('');
+      });
+    }
+
     const rects = [];
-    AVATAR_MAP.forEach((row, y) => {
-      Array.from(row).forEach((ch, x) => {
+    Object.keys(rows).forEach((key) => {
+      const y = Number(key);
+      Array.from(rows[key]).forEach((ch, x) => {
         if (AVATAR_COLORS[ch]) {
           const glint = ch === 'g' ? ' class="avatar__glint"' : '';
           rects.push(`<rect${glint} x="${x}" y="${y}" width="1.02" height="1.02" fill="${AVATAR_COLORS[ch]}"/>`);
         }
       });
     });
+    // Со шляпой картинка выше — растягиваем область рисования вверх
+    const height = 16 - top;
     document.getElementById('avatar-pixels').innerHTML =
-      `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`;
+      `<svg viewBox="0 ${top} 16 ${height}" style="height: ${(76 * height) / 16}%" shape-rendering="crispEdges">${rects.join('')}</svg>`;
   }
 
   function renderLinks() {
@@ -252,10 +297,6 @@
   window.Effects.cardHover(document.getElementById('project-list'));
   window.Effects.waveLetters(document.querySelector('.hero__name'));
   renderAvatar();
-
-  // Ссылка в блоке «давай сделаем вместе» — та же, что telegram в футере
-  const telegram = window.SOCIAL_LINKS.find((link) => link.name === 'telegram');
-  if (telegram) document.getElementById('cta-link').href = telegram.url;
 
   // Клик по аватару — случайная фраза (но не та же, что в прошлый раз)
   let lastQuip = -1;

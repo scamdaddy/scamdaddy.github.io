@@ -36,6 +36,10 @@
   // Большинство звёзд белые, немного фиолетовых, розовых и голубых
   const COLORS = ['#ffffff', '#ffffff', '#ffffff', '#ffffff', '#e4d4ff', '#c084fc', '#ff9cf0', '#9ff3ff'];
 
+  // Сезонный режим (js/season.js): на Хэллоуин часть звёзд оранжевые
+  const SEASON = window.SEASON || '';
+  if (SEASON === 'halloween') COLORS.push('#ffb347', '#ff7a1a', '#ffb347');
+
   const MOUSE_SHIFT = 60;   // максимальный сдвиг от мыши в пикселях
   const SCROLL_SHIFT = 0.5; // доля прокрутки, которую повторяют звёзды
   const EDGE = 30;          // запас за краем экрана, чтобы звёзды не «выпрыгивали»
@@ -113,6 +117,7 @@
       }
       return { depth: layer.depth, stars, ox: 0, oy: 0 };
     });
+    buildSnow();
   }
 
   // ---------- Размер холста ----------
@@ -263,6 +268,12 @@
     const cy = height * (small ? 0.16 : 0.22) - (animated ? mouse.y * MOUSE_SHIFT * depth + scroll * SCROLL_SHIFT * depth : 0);
     if (cy < -r * 3) return; // уехала за верх экрана — не рисуем
 
+    // На Хэллоуин вместо планеты — светящаяся тыква
+    if (SEASON === 'halloween') {
+      drawPumpkin(cx, cy, r, time, animated);
+      return;
+    }
+
     const tilt = -0.35;
     const ringRx = r * 2.1;
     const ringRy = r * 0.5;
@@ -324,6 +335,95 @@
     ctx.restore();
   }
 
+  // ---------- Тыква (Хэллоуин) ----------
+  function drawPumpkin(cx, cy, r, time, animated) {
+    ctx.save();
+    ctx.globalAlpha = 1;
+
+    // Тело из нескольких «долек»-эллипсов
+    const body = ctx.createRadialGradient(cx - r * 0.3, cy - r * 0.35, r * 0.1, cx, cy, r * 1.1);
+    body.addColorStop(0, '#ffb347');
+    body.addColorStop(0.6, '#ff7a1a');
+    body.addColorStop(1, '#8a2c00');
+    ctx.fillStyle = body;
+    ctx.strokeStyle = 'rgba(90, 25, 0, 0.6)';
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = 'rgba(255, 122, 26, 0.8)';
+    ctx.shadowBlur = r * 0.7;
+    [-0.6, 0.6, -0.3, 0.3, 0].forEach((k) => {
+      ctx.beginPath();
+      ctx.ellipse(cx + k * r * 0.75, cy, r * (k === 0 ? 0.5 : 0.55), r * 0.85, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+    });
+    ctx.shadowBlur = 0;
+
+    // Хвостик
+    ctx.fillStyle = '#4d7c0f';
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.08, cy - r * 0.78);
+    ctx.quadraticCurveTo(cx - r * 0.02, cy - r * 1.15, cx + r * 0.22, cy - r * 1.2);
+    ctx.lineTo(cx + r * 0.1, cy - r * 0.78);
+    ctx.closePath();
+    ctx.fill();
+
+    // Вырезанное лицо светится, как от свечки внутри (мерцает)
+    const flicker = animated ? 0.75 + 0.15 * Math.sin(time * 0.013) + 0.1 * Math.sin(time * 0.037) : 1;
+    ctx.globalAlpha = flicker;
+    ctx.fillStyle = '#ffe066';
+    ctx.shadowColor = '#ffb000';
+    ctx.shadowBlur = r * 0.4;
+    const tri = (points) => {
+      ctx.beginPath();
+      points.forEach(([x, y], i) => (i ? ctx.lineTo(cx + x * r, cy + y * r) : ctx.moveTo(cx + x * r, cy + y * r)));
+      ctx.closePath();
+      ctx.fill();
+    };
+    tri([[-0.42, -0.08], [-0.18, -0.08], [-0.3, -0.36]]);  // левый глаз
+    tri([[0.18, -0.08], [0.42, -0.08], [0.3, -0.36]]);     // правый глаз
+    tri([[-0.07, 0.1], [0.07, 0.1], [0, -0.04]]);          // нос
+    tri([                                                   // зубастая улыбка
+      [-0.5, 0.2], [-0.3, 0.32], [-0.2, 0.22], [-0.08, 0.34], [0.05, 0.22],
+      [0.18, 0.34], [0.3, 0.22], [0.5, 0.2], [0.32, 0.52], [-0.32, 0.52],
+    ]);
+    ctx.restore();
+  }
+
+  // ---------- Снег (Новый год) ----------
+  // Мягкие снежинки падают поверх звёзд и чуть покачиваются
+  let snow = [];
+
+  function buildSnow() {
+    if (SEASON !== 'newyear') return;
+    const count = Math.min(180, Math.round(width * height * 0.00011 * quality));
+    snow = Array.from({ length: count }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: rand(0.6, 2.4),
+      speed: rand(0.02, 0.07),
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: rand(0.0008, 0.002),
+      alpha: rand(0.4, 0.9),
+    }));
+  }
+
+  function drawSnow(dt, animated) {
+    for (const f of snow) {
+      if (animated) {
+        f.y += f.speed * dt * (0.6 + f.r * 0.3); // крупные падают быстрее
+        f.sway += f.swaySpeed * dt;
+        if (f.y > height + 6) {
+          f.y = -6;
+          f.x = Math.random() * width;
+        }
+      }
+      const x = f.x + Math.sin(f.sway) * 12;
+      const size = f.r * 5;
+      ctx.globalAlpha = f.alpha;
+      ctx.drawImage(sprites['#ffffff'], x - size / 2, f.y - size / 2, size, size);
+    }
+  }
+
   function drawRing(cx, cy, rx, ry, tilt, from, to, r) {
     const grad = ctx.createLinearGradient(cx - rx, cy, cx + rx, cy);
     grad.addColorStop(0, 'rgba(255, 79, 216, 0.85)');
@@ -350,6 +450,7 @@
   function drawStatic() {
     ctx.clearRect(0, 0, width, height);
     drawStars(0, false);
+    if (snow.length) drawSnow(0, false);
     ctx.globalAlpha = 1;
   }
 
@@ -573,6 +674,7 @@
 
     ctx.clearRect(0, 0, width, height);
     drawStars(now, true);
+    if (snow.length) drawSnow(dt, true);
     drawShootingStars(dt);
     if (novas.length) drawNovas(dt);
     if (formation) drawFormation(dt, now);

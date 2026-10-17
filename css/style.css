@@ -1136,70 +1136,90 @@ main,
   }
 }
 
-/* ---------- Призыв «давай сделаем вместе» ---------- */
+/* =========================================================
+   Сезонные режимы (даты — в js/season.js)
+   ========================================================= */
 
-.cta {
-  position: relative;
-  overflow: hidden;
-  padding: clamp(28px, 5vw, 56px);
-  border: 1px solid rgba(192, 132, 252, 0.6);
-  border-radius: calc(var(--radius) * 1.5);
+/* Хэллоуин: розовый становится тыквенно-оранжевым, голубой — ядовито-зелёным */
+html.season-halloween {
+  --pink: #ff7a1a;
+  --cyan: #a3ff3d;
+}
+
+html.season-halloween body {
   background:
-    radial-gradient(ellipse 70% 90% at 0% 0%, rgba(255, 79, 216, 0.16), transparent 60%),
-    radial-gradient(ellipse 70% 90% at 100% 100%, rgba(34, 229, 255, 0.14), transparent 60%),
-    rgba(14, 8, 26, 0.75);
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3), inset 0 0 40px rgba(168, 85, 247, 0.08);
-  text-align: center;
+    radial-gradient(ellipse 80% 60% at 75% 10%, rgba(109, 40, 217, 0.2), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 80%, rgba(255, 122, 26, 0.12), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
 }
 
-/* Световая полоса медленно проезжает по рамке */
-.cta::before {
-  content: "";
+/* Летучая мышь машет крыльями */
+.ufo--bat .bat__wing {
+  transform-box: view-box;
+  transform-origin: 30px 16px;
+  animation: bat-flap 0.28s ease-in-out infinite alternate;
+}
+
+.ufo--bat .bat__wing--right {
+  transform-origin: 34px 16px;
+}
+
+.ufo--bat {
+  filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.8)) drop-shadow(0 0 14px rgba(168, 85, 247, 0.5));
+}
+
+/* Паук на паутинке под шапкой */
+.spider {
   position: absolute;
-  top: 0;
-  left: -40%;
-  width: 40%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), var(--pink), transparent);
-  box-shadow: 0 0 12px var(--pink);
-  animation: cta-sweep 4s linear infinite;
+  top: 100%;
+  right: clamp(70px, 18vw, 240px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+  pointer-events: none;
+  animation: spider-swing 4s ease-in-out infinite;
 }
 
-.cta__kicker {
-  margin: 0 0 10px;
-  color: var(--cyan);
-  font-size: 14px;
+.spider__thread {
+  width: 1px;
+  height: 46px;
+  background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.5));
+  animation: spider-drop 6s ease-in-out infinite;
 }
 
-.cta__title {
-  margin: 0 0 16px;
-  font-family: var(--font-display);
-  font-size: clamp(26px, 5vw, 46px);
-  font-weight: 900;
-  line-height: 1.15;
-  color: #f5edff;
-  text-shadow: 0 0 10px rgba(192, 132, 252, 0.9), 0 0 36px rgba(168, 85, 247, 0.6);
+.spider__body {
+  margin-top: -2px;
+  filter: drop-shadow(0 0 6px rgba(255, 122, 26, 0.7));
 }
 
-.cta__text {
-  max-width: 560px;
-  margin: 0 auto 28px;
-  color: var(--text);
+/* Новый год: гирлянда из мигающих лампочек под шапкой */
+.garland {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  height: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
 }
 
-.cta__btn {
-  padding: 14px 28px;
-  font-size: 16px;
-  border-color: var(--pink);
-  background: rgba(255, 79, 216, 0.14);
-  box-shadow: 0 0 12px rgba(255, 79, 216, 0.6), 0 0 30px rgba(255, 79, 216, 0.25);
+.garland i {
+  width: 7px;
+  height: 11px;
+  margin-top: 2px;
+  border-radius: 40% 40% 50% 50%;
+  background: var(--bulb);
+  box-shadow: 0 0 6px var(--bulb), 0 0 14px var(--bulb);
+  animation: bulb-blink 1.5s steps(1) infinite;
+  animation-delay: var(--delay);
 }
 
-.cta__btn:hover,
-.cta__btn:focus-visible {
-  background: rgba(255, 79, 216, 0.3);
-  border-color: #ff8be6;
-  box-shadow: 0 0 16px rgba(255, 79, 216, 0.9), 0 0 50px rgba(255, 79, 216, 0.45);
+.garland i:nth-child(odd) {
+  margin-top: 5px;
 }
 
 /* ---------- CRT-включение ----------
@@ -1441,6 +1461,26 @@ main,
 
 /* ---------- Анимации ---------- */
 
+@keyframes bat-flap {
+  from { transform: scaleY(1); }
+  to { transform: scaleY(0.35); }
+}
+
+@keyframes spider-swing {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(6deg); }
+}
+
+@keyframes spider-drop {
+  0%, 100% { height: 46px; }
+  50% { height: 90px; }
+}
+
+@keyframes bulb-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.25; box-shadow: none; }
+}
+
 @keyframes avatar-spin {
   to { transform: rotate(1turn); }
 }
@@ -1449,10 +1489,6 @@ main,
   0%, 100% { fill: #22e5ff; }
   90% { fill: #ffffff; }
   94% { fill: #22e5ff; }
-}
-
-@keyframes cta-sweep {
-  to { left: 100%; }
 }
 
 @keyframes crt-shutter {

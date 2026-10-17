@@ -42,12 +42,6 @@ window.I18N = {
       'тсс… я тут инкогнито 🕶️',
     ],
 
-    // ---------- Призыв ----------
-    'cta.kicker': '// есть идея?',
-    'cta.title': 'давай сделаем что-то вместе',
-    'cta.text': 'пиши в telegram — обсудим проект, коллаб или просто поболтаем. иногда отвечаю быстрее, чем ИИ пишет код 😎',
-    'cta.button': 'написать в telegram',
-
     'links.title': 'ссылки',
     'footer.credit': 'сделано Artem вместе с Claude ❤️',
 
@@ -87,6 +81,10 @@ window.I18N = {
     'term.ufoHint': 'команда не найдена: {cmd}. но ты на верном пути 🛸 следи за небом…',
     'ufo.label': 'НЛО — поймай меня',
     'ufo.caught': '🛸 ты поймал НЛО! это секрет',
+    'bat.label': 'летучая мышь — поймай меня',
+    'bat.caught': '🦇 ты поймал летучую мышь! это секрет',
+    'season.halloween': '🎃 сладость или гадость? на сайте хэллоуин — лови летучую мышь',
+    'season.newyear': '🎄 с наступающим! пусть в новом году баги станут фичами',
     'progress.hint': 'нажми, вдруг повезёт',
     'term.money.start': 'запускаю денежный станок…',
     'term.money.label': 'заработано',
@@ -133,12 +131,6 @@ window.I18N = {
       'shh… i\'m incognito here 🕶️',
     ],
 
-    // ---------- Call to action ----------
-    'cta.kicker': '// got an idea?',
-    'cta.title': 'let\'s build something together',
-    'cta.text': 'text me on telegram — let\'s talk about a project, a collab or just chat. sometimes i reply faster than AI writes code 😎',
-    'cta.button': 'message me on telegram',
-
     'links.title': 'links',
     'footer.credit': 'made by Artem with Claude ❤️',
 
@@ -178,6 +170,10 @@ window.I18N = {
     'term.ufoHint': 'command not found: {cmd}. but you\'re on the right track 🛸 keep an eye on the sky…',
     'ufo.label': 'UFO — catch me',
     'ufo.caught': '🛸 you caught the UFO! that\'s a secret',
+    'bat.label': 'bat — catch me',
+    'bat.caught': '🦇 you caught the bat! that\'s a secret',
+    'season.halloween': '🎃 trick or treat? it\'s halloween here — catch the bat',
+    'season.newyear': '🎄 happy holidays! may all your bugs become features',
     'progress.hint': 'click it, maybe you\'ll get lucky',
     'term.money.start': 'starting the money printer…',
     'term.money.label': 'earned',

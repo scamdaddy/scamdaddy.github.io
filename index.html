@@ -53,7 +53,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&family=Unbounded:wght@500;700;900&display=swap">
 
-  <link rel="stylesheet" href="css/style.css?v=20261017-1559">
+  <!-- Сезонные режимы (Хэллоуин, Новый год): подключаем в <head>, чтобы цвета сменились сразу -->
+  <script src="js/season.js?v=20261017-1607"></script>
+
+  <link rel="stylesheet" href="css/style.css?v=20261017-1607">
 </head>
 <body>
   <!-- CRT-включение: чёрные шторки разъезжаются от светящейся линии (js/fx.js, css) -->
@@ -108,19 +111,6 @@
       <div id="about-list"></div>
     </section>
 
-    <!-- Призыв написать -->
-    <section class="section" id="collab">
-      <div class="cta reveal">
-        <p class="cta__kicker" data-i18n="cta.kicker">// есть идея?</p>
-        <h2 class="cta__title" data-i18n="cta.title">давай сделаем что-то вместе</h2>
-        <p class="cta__text" data-i18n="cta.text">пиши в telegram — обсудим проект, коллаб или просто поболтаем. иногда отвечаю быстрее, чем ИИ пишет код 😎</p>
-        <!-- Адрес подставляется из js/projects.js (ссылка telegram) -->
-        <a class="btn cta__btn" id="cta-link" href="https://t.me/scamdaddy" target="_blank" rel="noopener noreferrer">
-          <span data-i18n="cta.button">написать в telegram</span> <span class="btn__arrow" aria-hidden="true">↗</span>
-        </a>
-      </div>
-    </section>
-
     <!-- Мини-терминал (js/terminal.js). По клавише ~ всплывает поверх страницы -->
     <section class="section" id="terminal-section">
       <h2 class="section__title reveal"><span class="section__hash">//</span> <span data-i18n="term.section">терминал</span></h2>
@@ -165,12 +155,12 @@
   <!-- Порядок важен: сначала данные, потом код, который их использует.
        ?v=… — версия: при каждом обновлении сайта меняем её (tools/bump-version.ps1),
        чтобы браузер не взял старые файлы из кэша -->
-  <script src="js/stars.js?v=20261017-1559"></script>
-  <script src="js/i18n.js?v=20261017-1559"></script>
-  <script src="js/projects.js?v=20261017-1559"></script>
-  <script src="js/effects.js?v=20261017-1559"></script>
-  <script src="js/terminal.js?v=20261017-1559"></script>
-  <script src="js/fx.js?v=20261017-1559"></script>
-  <script src="js/main.js?v=20261017-1559"></script>
+  <script src="js/stars.js?v=20261017-1607"></script>
+  <script src="js/i18n.js?v=20261017-1607"></script>
+  <script src="js/projects.js?v=20261017-1607"></script>
+  <script src="js/effects.js?v=20261017-1607"></script>
+  <script src="js/terminal.js?v=20261017-1607"></script>
+  <script src="js/fx.js?v=20261017-1607"></script>
+  <script src="js/main.js?v=20261017-1607"></script>
 </body>
 </html>

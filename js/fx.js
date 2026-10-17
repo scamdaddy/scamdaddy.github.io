@@ -189,6 +189,20 @@
       <circle class="ufo__light" cx="47" cy="21" r="2.2" fill="#ff4fd8"/>
     </svg>`;
 
+  // На Хэллоуин вместо НЛО летает летучая мышь (секрет тот же — ufo)
+  const BAT_SVG = `
+    <svg viewBox="0 0 64 34" width="64" height="34" aria-hidden="true">
+      <g fill="#1a0b2e" stroke="#ff7a1a" stroke-width="1.4" stroke-linejoin="round">
+        <path class="bat__wing" d="M29 16 C24 6 14 4 3 8 C9 10 10 14 7 19 C13 15 17 18 18 23 C21 18 25 18 29 21 Z"/>
+        <path class="bat__wing bat__wing--right" d="M35 16 C40 6 50 4 61 8 C55 10 54 14 57 19 C51 15 47 18 46 23 C43 18 39 18 35 21 Z"/>
+        <path d="M28 13 L29 6 L31.5 11 L32.5 11 L35 6 L36 13 C37 20 35 25 32 26 C29 25 27 20 28 13 Z"/>
+      </g>
+      <circle cx="30" cy="14.5" r="1.3" fill="#ffe066"/>
+      <circle cx="34" cy="14.5" r="1.3" fill="#ffe066"/>
+    </svg>`;
+
+  const isHalloween = window.SEASON === 'halloween';
+
   function scheduleUfo(delay) {
     setTimeout(launchUfo, delay);
   }
@@ -201,9 +215,9 @@
 
     const ufo = document.createElement('button');
     ufo.type = 'button';
-    ufo.className = 'ufo';
-    ufo.setAttribute('aria-label', tr('ufo.label'));
-    ufo.innerHTML = UFO_SVG;
+    ufo.className = isHalloween ? 'ufo ufo--bat' : 'ufo';
+    ufo.setAttribute('aria-label', tr(isHalloween ? 'bat.label' : 'ufo.label'));
+    ufo.innerHTML = isHalloween ? BAT_SVG : UFO_SVG;
     document.body.appendChild(ufo);
 
     const fromLeft = Math.random() < 0.5;
@@ -238,7 +252,7 @@
       burst(rect.left + rect.width / 2, rect.top + rect.height / 2, 28);
       ufo.classList.add('is-caught'); // улетает вверх в луче света (CSS)
       setTimeout(() => ufo.remove(), 900);
-      window.Effects.toast(tr('ufo.caught'));
+      window.Effects.toast(tr(isHalloween ? 'bat.caught' : 'ufo.caught'));
       window.Terminal.markSecret('ufo');
       scheduleUfo(rand(60000, 120000));
     });
@@ -371,6 +385,47 @@
     }, { passive: true });
     window.addEventListener('resize', updateProgress);
     updateProgress();
+  }
+
+  /* =========================================================
+     Сезонные украшения (даты — в js/season.js)
+     ========================================================= */
+
+  const topbar = document.querySelector('.topbar');
+
+  // Хэллоуин: паук спускается на паутинке из шапки и покачивается
+  if (window.SEASON === 'halloween' && topbar) {
+    const spider = document.createElement('div');
+    spider.className = 'spider';
+    spider.setAttribute('aria-hidden', 'true');
+    spider.innerHTML = `
+      <span class="spider__thread"></span>
+      <svg class="spider__body" viewBox="0 0 40 30" width="40" height="30">
+        <g stroke="#ff7a1a" stroke-width="1.6" fill="none" stroke-linecap="round">
+          <path d="M14 13 L5 6 L1 11 M14 16 L3 15 L0 21 M15 19 L5 23 L3 29 M16 21 L10 27"/>
+          <path d="M26 13 L35 6 L39 11 M26 16 L37 15 L40 21 M25 19 L35 23 L37 29 M24 21 L30 27"/>
+        </g>
+        <ellipse cx="20" cy="17" rx="7" ry="8" fill="#1a0b2e" stroke="#ff7a1a" stroke-width="1.6"/>
+        <circle cx="17.5" cy="15" r="1.5" fill="#ffe066"/>
+        <circle cx="22.5" cy="15" r="1.5" fill="#ffe066"/>
+      </svg>`;
+    topbar.appendChild(spider);
+  }
+
+  // Новый год: мигающая гирлянда висит под шапкой
+  if (window.SEASON === 'newyear' && topbar) {
+    const garland = document.createElement('div');
+    garland.className = 'garland';
+    garland.setAttribute('aria-hidden', 'true');
+    const colors = ['#ff4fd8', '#22e5ff', '#ffe066', '#5dffb0', '#c084fc'];
+    const count = Math.max(12, Math.round(window.innerWidth / 42));
+    for (let i = 0; i < count; i++) {
+      const bulb = document.createElement('i');
+      bulb.style.setProperty('--bulb', colors[i % colors.length]);
+      bulb.style.setProperty('--delay', `${(i % 3) * 0.5}s`);
+      garland.appendChild(bulb);
+    }
+    topbar.appendChild(garland);
   }
 
   // Для отладки в консоли: Fx.launchUfo() — запустить НЛО прямо сейчас

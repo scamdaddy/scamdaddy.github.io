@@ -437,6 +437,8 @@ window.Terminal = (function () {
     fab = document.getElementById('terminal-fab');
 
     print(app.t('term.welcome'), 'term-muted');
+    // Сезонное поздравление (даты — в js/season.js)
+    if (window.SEASON) print(app.t(`season.${window.SEASON}`), 'term-trophy');
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
