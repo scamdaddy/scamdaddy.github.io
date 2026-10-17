@@ -5,9 +5,37 @@
 (function () {
   'use strict';
 
-  // Этап 5: язык будет выбираться переключателем и запоминаться
-  let lang = 'ru';
+  const STORAGE_KEY = 'lang';
+  let lang = detectLang();
   let stopTyping = () => {};
+
+  // ---------- Язык ----------
+
+  // Сначала — то, что посетитель выбрал раньше, иначе — язык браузера.
+  // Русский для русскоязычных браузеров, английский для всех остальных.
+  function detectLang() {
+    const saved = readSavedLang();
+    if (saved && window.I18N[saved]) return saved;
+    const browserLangs = navigator.languages || [navigator.language || ''];
+    return browserLangs.some((l) => /^ru\b/i.test(l)) ? 'ru' : 'en';
+  }
+
+  // localStorage может быть запрещён (приватный режим и т.п.) — поэтому try/catch
+  function readSavedLang() {
+    try {
+      return localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveLang(value) {
+    try {
+      localStorage.setItem(STORAGE_KEY, value);
+    } catch (e) {
+      // не получилось запомнить — не страшно, просто в следующий раз язык определится заново
+    }
+  }
 
   // ---------- Помощники ----------
 
@@ -54,9 +82,14 @@
 
   function renderStaticTexts() {
     document.documentElement.lang = lang;
+    document.title = t('meta.title');
+    document.querySelector('meta[name="description"]').content = t('meta.description');
+
     // Подсвечиваем текущий язык в переключателе
     document.querySelectorAll('.lang-switch__btn').forEach((btn) => {
-      btn.classList.toggle('is-active', btn.dataset.lang === lang);
+      const active = btn.dataset.lang === lang;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-pressed', String(active));
     });
     document.querySelectorAll('[data-i18n]').forEach((el) => {
       el.textContent = t(el.dataset.i18n);
@@ -122,12 +155,14 @@
     window.Effects.reveal(document);
   }
 
-  // Смена языка: перерисовываем все тексты
-  // (этап 5: переключатель в углу, запоминание и язык браузера по умолчанию)
+  // Смена языка: запоминаем выбор и перерисовываем все тексты.
+  // Имя на секунду «глючит» — так переключение выглядит эффектнее
   function setLang(newLang) {
     if (!window.I18N[newLang] || newLang === lang) return;
     lang = newLang;
+    saveLang(lang);
     renderAll();
+    window.Effects.glitchOnce(document.querySelector('.hero__name'));
   }
 
   function toggleLang() {
@@ -138,6 +173,11 @@
 
   renderAll();
   window.Effects.spotlight(document.getElementById('project-list'));
+
+  // Кнопки ru / en в углу
+  document.querySelectorAll('.lang-switch__btn').forEach((btn) => {
+    btn.addEventListener('click', () => setLang(btn.dataset.lang));
+  });
 
   // Терминалу отдаём помощников, чтобы он говорил на текущем языке
   window.Terminal.init({ t, pick, esc, toggleLang });

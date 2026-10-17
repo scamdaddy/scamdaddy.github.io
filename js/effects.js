@@ -121,15 +121,18 @@ window.Effects = (function () {
   /* ---------- Глитч ----------
      Сам эффект описан в CSS (класс .glitch).
      Здесь только включаем его время от времени на ~0.6 секунды. */
+  function glitchOnce(el) {
+    if (!el || reducedMotion()) return;
+    el.classList.add('is-glitching');
+    setTimeout(() => el.classList.remove('is-glitching'), 600);
+  }
+
   function glitch(el) {
     if (!el) return;
 
     function schedule() {
       setTimeout(() => {
-        if (!reducedMotion() && !document.hidden) {
-          el.classList.add('is-glitching');
-          setTimeout(() => el.classList.remove('is-glitching'), 600);
-        }
+        if (!document.hidden) glitchOnce(el);
         schedule();
       }, rand(2500, 6500));
     }
@@ -181,5 +184,5 @@ window.Effects = (function () {
     }, { passive: true });
   }
 
-  return { typewriter, glitch, reveal, spotlight };
+  return { typewriter, glitch, glitchOnce, reveal, spotlight };
 })();

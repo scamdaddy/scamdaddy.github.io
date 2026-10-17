@@ -25,10 +25,10 @@
   <header class="topbar">
     <a class="topbar__logo" href="#hero">@scamdaddy<span class="topbar__cursor">_</span></a>
 
-    <!-- Переключатель языка (заработает на этапе 5) -->
-    <div class="lang-switch" role="group" aria-label="язык / language">
-      <button class="lang-switch__btn is-active" type="button" data-lang="ru">ru</button>
-      <button class="lang-switch__btn" type="button" data-lang="en">en</button>
+    <!-- Переключатель языка: выбор запоминается (js/main.js) -->
+    <div class="lang-switch" role="group" aria-label="язык" data-i18n-label="lang.label">
+      <button class="lang-switch__btn is-active" type="button" data-lang="ru" lang="ru" aria-pressed="true">ru</button>
+      <button class="lang-switch__btn" type="button" data-lang="en" lang="en" aria-pressed="false">en</button>
     </div>
   </header>
 
@@ -82,7 +82,7 @@
 
   <footer class="footer" id="links">
     <!-- Иконки GitHub и Telegram (данные — в js/projects.js) -->
-    <nav class="footer__links reveal" id="social-links" aria-label="ссылки"></nav>
+    <nav class="footer__links reveal" id="social-links" aria-label="ссылки" data-i18n-label="links.title"></nav>
 
     <!-- Место под счётчик просмотров — отдельный этап -->
     <div class="footer__views" id="views-counter" hidden></div>

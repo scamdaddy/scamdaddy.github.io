@@ -6,6 +6,10 @@
 
 window.I18N = {
   ru: {
+    'meta.title': 'Artem — @scamdaddy',
+    'meta.description': 'вайбкодер. делаю игры и полезные штуки вместе с ИИ.',
+    'lang.label': 'язык',
+
     'hero.greeting': [
       'привет! я <b class="hl">Artem</b>, в сети — <span class="accent-pink">@scamdaddy</span>.',
       'я вайбкодер: придумываю идеи и превращаю их в работающие проекты вместе с <span class="accent-cyan">ИИ</span>.',
@@ -63,6 +67,10 @@ window.I18N = {
   },
 
   en: {
+    'meta.title': 'Artem — @scamdaddy',
+    'meta.description': 'vibe coder. i make games and useful stuff together with AI.',
+    'lang.label': 'language',
+
     'hero.greeting': [
       'hi! i\'m <b class="hl">Artem</b>, online — <span class="accent-pink">@scamdaddy</span>.',
       'i\'m a vibe coder: i come up with ideas and turn them into working projects together with <span class="accent-cyan">AI</span>.',
