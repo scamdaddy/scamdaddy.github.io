@@ -12,6 +12,39 @@ window.Terminal = (function () {
   const PUBLIC = ['help', 'about', 'projects', 'play', 'links', 'lang', 'clear'];
   const RUNAWAY_URL = 'https://runaway-rose.vercel.app/';
 
+  // Секретные команды, которые считаются в «найдено секретов»
+  const SECRETS = ['sudo', 'coffee', 'hack', 'money'];
+  const SECRETS_KEY = 'secrets';
+
+  // Слова «про деньги»: если ввести такое — терминал подскажет команду money
+  const MONEY_WORDS = /cash|rich|dollar|bank|salary|earn|coin|деньг|денег|бабк|бабл|доллар|банк|зарплат|зараб|мани|рубл|монет|богат|\$/i;
+
+  // Найденные секреты храним в браузере, чтобы счёт не сбрасывался
+  function loadFound() {
+    try {
+      return new Set(JSON.parse(localStorage.getItem(SECRETS_KEY)) || []);
+    } catch (e) {
+      return new Set();
+    }
+  }
+
+  const found = loadFound();
+
+  function secretsLine(key) {
+    return app.t(key).replace('{n}', found.size).replace('{total}', SECRETS.length);
+  }
+
+  function markSecret(name) {
+    if (!SECRETS.includes(name) || found.has(name)) return;
+    found.add(name);
+    try {
+      localStorage.setItem(SECRETS_KEY, JSON.stringify([...found]));
+    } catch (e) {
+      // не запомнили — не страшно
+    }
+    print(found.size === SECRETS.length ? app.t('term.secretsAll') : secretsLine('term.secretFound'), 'term-trophy');
+  }
+
   let app;        // помощники из main.js: t, pick, esc, toggleLang
   let section, box, output, form, input, backdrop, fab;
   const history = [];
@@ -49,6 +82,7 @@ window.Terminal = (function () {
         print(`<span class="term-cmd">${pad(name, 10)}</span>${app.esc(desc)}`);
       });
       print(app.t('term.helpHint'), 'term-muted');
+      print(secretsLine('term.secrets'), 'term-trophy');
     },
 
     about() {
@@ -175,8 +209,13 @@ window.Terminal = (function () {
     const name = text.split(/\s+/)[0].toLowerCase();
     const command = Object.prototype.hasOwnProperty.call(commands, name) ? commands[name] : null;
 
-    if (command) command();
-    else print(app.t('term.unknown').replace('{cmd}', app.esc(name)), 'term-error');
+    if (command) {
+      // Когда команда доиграет (у секретных бывают анимации) — засчитываем секрет
+      Promise.resolve(command()).then(() => markSecret(name));
+    } else {
+      const key = MONEY_WORDS.test(text) ? 'term.moneyHint' : 'term.unknown';
+      print(app.t(key).replace('{cmd}', app.esc(name)), 'term-error');
+    }
   }
 
   // ---------- Автодополнение по Tab ----------
@@ -407,5 +446,5 @@ window.Terminal = (function () {
     });
   }
 
-  return { init, run, open, close };
+  return { init, run, open, close, moneyRain };
 })();

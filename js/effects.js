@@ -258,5 +258,27 @@ window.Effects = (function () {
     });
   }
 
-  return { typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition };
+  /* ---------- Всплывающая подсказка ----------
+     Неоновая плашка в углу, сама исчезает через несколько секунд.
+     Одновременно показывается только одна. */
+  let toastEl = null;
+  let toastTimer = 0;
+
+  function toast(html, duration = 4500) {
+    if (!toastEl) {
+      toastEl = document.createElement('div');
+      toastEl.className = 'toast';
+      toastEl.setAttribute('role', 'status');
+      document.body.appendChild(toastEl);
+    }
+    toastEl.innerHTML = html;
+    toastEl.classList.remove('is-shown');
+    void toastEl.offsetWidth; // перезапуск анимации появления
+    toastEl.classList.add('is-shown');
+
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toastEl.classList.remove('is-shown'), duration);
+  }
+
+  return { typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition, toast };
 })();

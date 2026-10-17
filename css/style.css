@@ -525,6 +525,74 @@ main,
   color: var(--muted);
 }
 
+/* Шкала — это кнопка-пасхалка */
+.progress-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: transform 0.25s var(--ease-out);
+}
+
+.progress-trigger .progress {
+  width: 220px;
+  max-width: 45vw;
+  transition: box-shadow 0.25s, border-color 0.25s;
+}
+
+.progress-trigger:hover .progress,
+.progress-trigger:focus-visible .progress {
+  border-color: var(--pink);
+  box-shadow: 0 0 12px rgba(255, 79, 216, 0.7), 0 0 30px rgba(255, 79, 216, 0.35);
+}
+
+.progress-trigger:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Всплывающая подсказка ---------- */
+
+.toast {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 70;
+  max-width: calc(100% - 100px);
+  padding: 12px 18px;
+  border: 1px solid var(--pink);
+  border-radius: 12px;
+  background: rgba(14, 8, 26, 0.95);
+  color: var(--text);
+  font-size: 14px;
+  box-shadow: 0 0 14px rgba(255, 79, 216, 0.5), 0 0 40px rgba(168, 85, 247, 0.3);
+  opacity: 0;
+  transform: translateY(20px);
+  pointer-events: none;
+  transition: opacity 0.35s, transform 0.35s var(--ease-out);
+}
+
+.toast.is-shown {
+  opacity: 1;
+  transform: none;
+}
+
+.toast b {
+  color: var(--cyan);
+  text-shadow: 0 0 6px var(--cyan);
+}
+
+.term-trophy {
+  color: #ffd76a;
+  text-shadow: 0 0 8px rgba(255, 215, 106, 0.6);
+}
+
 /* ---------- Ссылки ---------- */
 
 .footer__links {

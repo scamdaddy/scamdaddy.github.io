@@ -132,14 +132,17 @@
     }).join('');
   }
 
-  // Неоновая шкала: заполняется, когда строка выезжает на экран (см. CSS .progress)
+  // Неоновая шкала: заполняется, когда строка выезжает на экран (см. CSS .progress).
+  // Это кнопка: клик запускает денежный дождь и подсказывает про команду money
   function progressHtml(item) {
     return `
-      <span class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-            aria-valuenow="${item.progress}" aria-label="${esc(item.label)}">
-        <span class="progress__fill" style="--value: ${item.progress}%"></span>
-      </span>
-      <span class="progress__value">${item.progress}%</span>
+      <button class="progress-trigger" type="button" title="${esc(t('progress.hint'))}">
+        <span class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+              aria-valuenow="${item.progress}" aria-label="${esc(item.label)}">
+          <span class="progress__fill" style="--value: ${item.progress}%"></span>
+        </span>
+        <span class="progress__value">${item.progress}%</span>
+      </button>
       <span class="progress__note">— ${esc(item.text)}</span>`;
   }
 
@@ -207,6 +210,15 @@
       if (tab) tab.opener = null; // новая вкладка не получит доступ к нашей странице
       else window.location.href = link.href; // браузер заблокировал вкладку — открываем здесь
     });
+  });
+
+  // Клик по шкале прогресса: немного денег с неба и намёк на секретную команду
+  document.getElementById('about-list').addEventListener('click', (e) => {
+    if (!e.target.closest('.progress-trigger')) return;
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      window.Terminal.moneyRain(2200);
+    }
+    window.Effects.toast(t('toast.money'));
   });
 
   // Плотный фон у шапки, как только страницу начали прокручивать
