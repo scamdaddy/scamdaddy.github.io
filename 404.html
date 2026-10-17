@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>404 — Artem</title>
+  <meta name="theme-color" content="#05030a">
+  <meta name="robots" content="noindex">
+  <!-- GitHub Pages показывает эту страницу для любого несуществующего адреса,
+       поэтому пути к файлам — от корня сайта (начинаются с /) -->
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@900&display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .lost {
+      min-height: 100vh;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 40px 16px;
+      text-align: center;
+    }
+
+    .lost .hero__name { align-self: center; }
+
+    .lost p { margin: 0; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+  <main class="lost">
+    <h1 class="hero__name glitch is-glitching" data-text="404">404</h1>
+    <p id="lost-text">эта страница улетела в открытый космос 🚀</p>
+    <a class="btn" id="lost-home" href="/">на главную <span class="btn__arrow" aria-hidden="true">↗</span></a>
+  </main>
+
+  <script src="/js/stars.js"></script>
+  <script>
+    // Язык — как выбран на главной, иначе язык браузера
+    (function () {
+      let lang = null;
+      try { lang = localStorage.getItem('lang'); } catch (e) {}
+      if (!lang) lang = /^ru\b/i.test(navigator.language || '') ? 'ru' : 'en';
+      if (lang === 'en') {
+        document.documentElement.lang = 'en';
+        document.getElementById('lost-text').textContent = 'this page drifted into outer space 🚀';
+        document.getElementById('lost-home').firstChild.textContent = 'back home ';
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -6,6 +6,7 @@
   'use strict';
 
   const STORAGE_KEY = 'lang';
+  const isTouch = window.matchMedia('(hover: none)').matches;
   let lang = detectLang();
   let stopTyping = () => {};
 
@@ -92,7 +93,9 @@
       btn.setAttribute('aria-pressed', String(active));
     });
     document.querySelectorAll('[data-i18n]').forEach((el) => {
-      el.textContent = t(el.dataset.i18n);
+      // data-i18n-touch — другой текст для телефонов (например, без упоминания клавиш)
+      const key = isTouch && el.dataset.i18nTouch ? el.dataset.i18nTouch : el.dataset.i18n;
+      el.textContent = t(key);
     });
     // Тексты в атрибутах: подсказка в поле ввода и подписи для экранных чтецов
     document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
@@ -173,6 +176,12 @@
 
   renderAll();
   window.Effects.spotlight(document.getElementById('project-list'));
+
+  // Плотный фон у шапки, как только страницу начали прокручивать
+  const topbar = document.querySelector('.topbar');
+  const updateTopbar = () => topbar.classList.toggle('is-scrolled', window.scrollY > 10);
+  window.addEventListener('scroll', updateTopbar, { passive: true });
+  updateTopbar();
 
   // Кнопки ru / en в углу
   document.querySelectorAll('.lang-switch__btn').forEach((btn) => {

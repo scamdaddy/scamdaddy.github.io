@@ -111,7 +111,16 @@ main,
   align-items: center;
   justify-content: space-between;
   padding: 14px var(--gutter);
-  background: linear-gradient(to bottom, rgba(5, 3, 10, 0.85), transparent);
+  border-bottom: 1px solid transparent;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+/* После начала прокрутки шапка получает плотный фон, чтобы текст не лез под логотип */
+.topbar.is-scrolled {
+  background: rgba(5, 3, 10, 0.88);
+  border-bottom-color: rgba(168, 85, 247, 0.2);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .topbar__logo {
@@ -953,6 +962,22 @@ main,
     left: 8px;
     right: 8px;
     bottom: 8px;
+  }
+
+  /* Место под круглую кнопку >_, чтобы она не закрывала подпись */
+  .footer {
+    padding-bottom: 90px;
+  }
+}
+
+/* На телефонах и планшетах размытие под карточками заменяем плотным фоном:
+   иначе видеокарте пришлось бы каждый кадр заново размывать движущиеся звёзды */
+@media (hover: none) {
+  .card,
+  .terminal {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(14, 8, 26, 0.92);
   }
 }
 

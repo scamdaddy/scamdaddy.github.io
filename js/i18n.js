@@ -35,6 +35,7 @@ window.I18N = {
     // ---------- Терминал ----------
     'term.section': 'терминал',
     'term.hint': 'пиши команды прямо здесь или нажми ~ в любом месте страницы',
+    'term.hintTouch': 'пиши команды прямо здесь или жми кнопку >_ в углу',
     'term.placeholder': 'введи help',
     'term.open': 'открыть терминал',
     'term.close': 'закрыть терминал',
@@ -95,6 +96,7 @@ window.I18N = {
     // ---------- Terminal ----------
     'term.section': 'terminal',
     'term.hint': 'type commands right here or press ~ anywhere on the page',
+    'term.hintTouch': 'type commands right here or tap the >_ button in the corner',
     'term.placeholder': 'type help',
     'term.open': 'open terminal',
     'term.close': 'close terminal',

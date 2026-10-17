@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <!-- Исходник картинки превью 1200×630 для Telegram и соцсетей.
+       Картинку делает скрипт tools/make-images.ps1 (скриншот через Edge). -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@900&family=Unbounded:wght@700&display=block">
+  <style>
+    * { box-sizing: border-box; margin: 0; }
+
+    html, body {
+      width: 1200px;
+      height: 630px;
+      overflow: hidden;
+      background: #05030a;
+      color: #ece6ff;
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    .frame {
+      position: relative;
+      width: 1200px;
+      height: 630px;
+      padding: 70px 80px;
+      background:
+        radial-gradient(ellipse 60% 70% at 80% 15%, rgba(109, 40, 217, 0.35), transparent 60%),
+        radial-gradient(ellipse 50% 60% at 5% 95%, rgba(255, 79, 216, 0.14), transparent 60%);
+    }
+
+    canvas {
+      position: absolute;
+      inset: 0;
+    }
+
+    .content {
+      position: relative;
+    }
+
+    .prompt {
+      font-size: 28px;
+      color: #9a8fb8;
+    }
+
+    .prompt b { color: #22e5ff; font-weight: 400; }
+
+    .name {
+      position: relative;
+      display: inline-block;
+      margin-top: 6px;
+      font-family: "Orbitron", sans-serif;
+      font-weight: 900;
+      font-size: 200px;
+      line-height: 1;
+      color: #f5edff;
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.95), 0 0 40px rgba(168, 85, 247, 0.8), 0 0 100px rgba(168, 85, 247, 0.5);
+    }
+
+    /* Застывший кадр глитча */
+    .name::before,
+    .name::after {
+      content: "Artem";
+      position: absolute;
+      inset: 0;
+      text-shadow: none;
+      mix-blend-mode: screen;
+    }
+
+    .name::before { color: #ff4fd8; transform: translateX(-12px); clip-path: inset(18% 0 58% 0); }
+    .name::after { color: #22e5ff; transform: translateX(12px); clip-path: inset(62% 0 14% 0); }
+
+    .tagline {
+      margin-top: 28px;
+      font-size: 34px;
+      line-height: 1.4;
+    }
+
+    .tagline .pink { color: #ff4fd8; }
+    .tagline .violet { color: #c084fc; text-shadow: 0 0 12px rgba(168, 85, 247, 0.7); }
+
+    .footer {
+      position: absolute;
+      left: 80px;
+      right: 80px;
+      bottom: 56px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 26px;
+    }
+
+    .tags { display: flex; gap: 14px; }
+
+    .tag {
+      padding: 6px 18px;
+      border: 2px solid currentColor;
+      border-radius: 999px;
+      font-size: 22px;
+      box-shadow: 0 0 14px -2px currentColor;
+      text-shadow: 0 0 8px currentColor;
+    }
+
+    .url { color: #9a8fb8; }
+    .cursor { color: #c084fc; }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <canvas id="stars" width="1200" height="630"></canvas>
+    <div class="content">
+      <p class="prompt"><b>~/artem</b> $ whoami</p>
+      <h1 class="name">Artem</h1>
+      <p class="tagline"><span class="pink">@scamdaddy</span> · <span class="violet">вайбкодер</span><br>делаю игры и полезные штуки вместе с ИИ</p>
+    </div>
+    <div class="footer">
+      <div class="tags">
+        <span class="tag" style="color:#22e5ff">games</span>
+        <span class="tag" style="color:#ff4fd8">apps</span>
+        <span class="tag" style="color:#c084fc">AI</span>
+      </div>
+      <span class="url">artemvib.github.io<span class="cursor">▍</span></span>
+    </div>
+  </div>
+
+  <script>
+    // Звёзды с фиксированным «зерном», чтобы картинка всегда получалась одинаковой
+    let seed = 42;
+    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const ctx = document.getElementById('stars').getContext('2d');
+    const colors = ['#ffffff', '#ffffff', '#ffffff', '#e4d4ff', '#c084fc', '#ff9cf0', '#9ff3ff'];
+    for (let i = 0; i < 420; i++) {
+      const x = rand() * 1200;
+      const y = rand() * 630;
+      const r = rand() < 0.9 ? rand() * 1.1 + 0.3 : rand() * 1.6 + 1.2;
+      const color = colors[Math.floor(rand() * colors.length)];
+      ctx.globalAlpha = rand() * 0.6 + 0.35;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = r * 4;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Падающая звезда
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur = 0;
+    const grad = ctx.createLinearGradient(1080, 90, 860, 230);
+    grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+    grad.addColorStop(0.3, 'rgba(192,132,252,0.6)');
+    grad.addColorStop(1, 'rgba(168,85,247,0)');
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(1080, 90);
+    ctx.lineTo(860, 230);
+    ctx.stroke();
+  </script>
+</body>
+</html>

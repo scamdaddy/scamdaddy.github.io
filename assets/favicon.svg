@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Иконка сайта: неоновая буква A с глитч-сдвигом (розовая и голубая копии) -->
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0a0614" stroke="#a855f7" stroke-width="2.5"/>
+  <g fill="none" stroke-width="6" stroke-linejoin="round">
+    <path d="M17 50V27a9 9 0 0 1 9-9h12a9 9 0 0 1 9 9v23M17 36h30" stroke="#ff4fd8" transform="translate(-2.5 0)" opacity="0.85"/>
+    <path d="M17 50V27a9 9 0 0 1 9-9h12a9 9 0 0 1 9 9v23M17 36h30" stroke="#22e5ff" transform="translate(2.5 0)" opacity="0.85"/>
+    <path d="M17 50V27a9 9 0 0 1 9-9h12a9 9 0 0 1 9 9v23M17 36h30" stroke="#f3e8ff" filter="url(#glow)"/>
+  </g>
+</svg>
