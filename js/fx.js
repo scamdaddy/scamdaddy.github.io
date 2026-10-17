@@ -18,7 +18,11 @@
   // Текст на текущем языке (язык выставляет main.js в <html lang>)
   const tr = (key) => (window.I18N[html.lang] || window.I18N.ru)[key];
 
-  const COLORS = ['#ff4fd8', '#c084fc', '#22e5ff', '#ffffff', '#5dffb0'];
+  // Цвета искр зависят от сезона
+  const COLORS = {
+    halloween: ['#ff7a1a', '#a3ff3d', '#c084fc', '#ffe066'],
+    newyear: ['#ff3b5c', '#5dffb0', '#ffe066', '#ffffff', '#22e5ff'],
+  }[window.SEASON] || ['#ff4fd8', '#c084fc', '#22e5ff', '#ffffff', '#5dffb0'];
 
   /* =========================================================
      Вступление
@@ -94,7 +98,9 @@
 
   document.addEventListener('click', (e) => {
     if (html.classList.contains('intro-running') || e.target.closest(NOT_SKY)) return;
-    window.starfield.supernova(e.clientX, e.clientY);
+    // На Новый год вместо сверхновой — салют
+    if (window.SEASON === 'newyear') window.starfield.firework(e.clientX, e.clientY);
+    else window.starfield.supernova(e.clientX, e.clientY);
   });
 
   /* =========================================================
@@ -201,7 +207,55 @@
       <circle cx="34" cy="14.5" r="1.3" fill="#ffe066"/>
     </svg>`;
 
-  const isHalloween = window.SEASON === 'halloween';
+  // Хэллоуин: летающая тарелка-тыква
+  const PUMPKIN_UFO_SVG = `
+    <svg viewBox="0 0 64 40" width="64" height="40" aria-hidden="true">
+      <path d="M32 3 Q34 0 37 1" stroke="#4d7c0f" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <g fill="#ff7a1a" stroke="#8a2c00" stroke-width="1">
+        <ellipse cx="25" cy="14" rx="8" ry="10"/>
+        <ellipse cx="39" cy="14" rx="8" ry="10"/>
+        <ellipse cx="32" cy="14" rx="8" ry="11"/>
+      </g>
+      <g fill="#ffe066">
+        <path d="M26 12 L30 12 L28 8 Z"/>
+        <path d="M34 12 L38 12 L36 8 Z"/>
+        <path d="M25 16 L39 16 L36 20 L28 20 Z"/>
+      </g>
+      <ellipse cx="32" cy="27" rx="29" ry="7.5" fill="#1a0b33" stroke="#c084fc" stroke-width="2"/>
+      <circle class="ufo__light" cx="17" cy="28" r="2.2" fill="#a3ff3d"/>
+      <circle class="ufo__light" cx="32" cy="30.5" r="2.2" fill="#ff7a1a"/>
+      <circle class="ufo__light" cx="47" cy="28" r="2.2" fill="#a3ff3d"/>
+    </svg>`;
+
+  // Новый год: сани с оленем Рудольфом (красный нос светится)
+  const SLEIGH_SVG = `
+    <svg viewBox="0 0 112 44" width="112" height="44" aria-hidden="true">
+      <g stroke="#ffe066" stroke-width="1.6" fill="none" stroke-linecap="round">
+        <path d="M31 9 L28 3 M28 6 L25 5 M34 9 L36 3 M36 6 L39 5"/>
+        <path d="M14 24 L12 33 M18 25 L19 33 M26 25 L24 33 M30 24 L32 33"/>
+        <path d="M33 16 Q48 20 62 23" stroke-width="1" opacity="0.7"/>
+        <path d="M56 36 L100 36 Q107 36 106 30"/>
+      </g>
+      <ellipse cx="22" cy="21" rx="11" ry="5.5" fill="#7c4a1e" stroke="#ffe066" stroke-width="1.2"/>
+      <circle cx="32" cy="13" r="4.5" fill="#7c4a1e" stroke="#ffe066" stroke-width="1.2"/>
+      <circle class="sleigh__nose" cx="36.5" cy="13.5" r="2" fill="#ff3b5c"/>
+      <path d="M60 18 L94 18 Q102 18 102 10 L104 10 L104 22 Q104 32 94 32 L64 32 Q58 32 60 18 Z" fill="#9f1239" stroke="#ffe066" stroke-width="1.4"/>
+      <rect x="66" y="9" width="9" height="9" fill="#22e5ff" stroke="#ffe066" stroke-width="1"/>
+      <rect x="77" y="5" width="11" height="13" fill="#5dffb0" stroke="#ffe066" stroke-width="1"/>
+      <rect x="89" y="11" width="7" height="7" fill="#ff4fd8" stroke="#ffe066" stroke-width="1"/>
+    </svg>`;
+
+  // Кто летает в каждом сезоне. Ловится любой — это всё тот же пятый секрет (ufo)
+  const FLYERS = {
+    default: [{ svg: UFO_SVG, className: 'ufo', label: 'ufo.label', caught: 'ufo.caught' }],
+    halloween: [
+      { svg: PUMPKIN_UFO_SVG, className: 'ufo ufo--pumpkin', label: 'pumpkin.label', caught: 'pumpkin.caught' },
+      { svg: BAT_SVG, className: 'ufo ufo--bat', label: 'bat.label', caught: 'bat.caught' },
+    ],
+    newyear: [
+      { svg: SLEIGH_SVG, className: 'ufo ufo--sleigh', label: 'sleigh.label', caught: 'sleigh.caught', flips: true },
+    ],
+  };
 
   function scheduleUfo(delay) {
     setTimeout(launchUfo, delay);
@@ -213,16 +267,21 @@
       return;
     }
 
+    const options = FLYERS[window.SEASON] || FLYERS.default;
+    const flyer = options[Math.floor(Math.random() * options.length)];
+
     const ufo = document.createElement('button');
     ufo.type = 'button';
-    ufo.className = isHalloween ? 'ufo ufo--bat' : 'ufo';
-    ufo.setAttribute('aria-label', tr(isHalloween ? 'bat.label' : 'ufo.label'));
-    ufo.innerHTML = isHalloween ? BAT_SVG : UFO_SVG;
+    ufo.className = flyer.className;
+    ufo.setAttribute('aria-label', tr(flyer.label));
+    ufo.innerHTML = flyer.svg;
     document.body.appendChild(ufo);
 
     const fromLeft = Math.random() < 0.5;
-    const startX = fromLeft ? -80 : window.innerWidth + 16;
-    const endX = fromLeft ? window.innerWidth + 16 : -80;
+    // Сани смотрят вправо — если летят влево, разворачиваем картинку
+    if (flyer.flips && !fromLeft) ufo.querySelector('svg').style.transform = 'scaleX(-1)';
+    const startX = fromLeft ? -130 : window.innerWidth + 16;
+    const endX = fromLeft ? window.innerWidth + 16 : -130;
     const baseY = window.innerHeight * rand(0.1, 0.4);
     const duration = rand(9000, 12000);
     const start = performance.now();
@@ -252,7 +311,7 @@
       burst(rect.left + rect.width / 2, rect.top + rect.height / 2, 28);
       ufo.classList.add('is-caught'); // улетает вверх в луче света (CSS)
       setTimeout(() => ufo.remove(), 900);
-      window.Effects.toast(tr(isHalloween ? 'bat.caught' : 'ufo.caught'));
+      window.Effects.toast(tr(flyer.caught));
       window.Terminal.markSecret('ufo');
       scheduleUfo(rand(60000, 120000));
     });
@@ -428,6 +487,94 @@
     topbar.appendChild(garland);
   }
 
+  // Слой для фоновых украшений: над звёздами, под текстом
+  const seasonLayer = document.createElement('div');
+  seasonLayer.className = 'season-layer';
+  seasonLayer.setAttribute('aria-hidden', 'true');
+  document.getElementById('stars').after(seasonLayer);
+
+  const GHOST_SVG = `
+    <svg viewBox="0 0 40 48" width="100%" height="100%">
+      <path d="M20 2 C9 2 4 10 4 20 L4 44 L10 39 L15 45 L20 39 L25 45 L30 39 L36 44 L36 20 C36 10 31 2 20 2 Z"
+            fill="rgba(236, 230, 255, 0.85)" stroke="#c084fc" stroke-width="1.5"/>
+      <ellipse cx="14" cy="18" rx="3" ry="4" fill="#1a0b2e"/>
+      <ellipse cx="26" cy="18" rx="3" ry="4" fill="#1a0b2e"/>
+      <ellipse cx="20" cy="28" rx="3" ry="4" fill="#1a0b2e"/>
+    </svg>`;
+
+  // Призрак медленно всплывает снизу вверх, покачиваясь, и тает
+  function spawnGhost() {
+    if (document.hidden || seasonLayer.querySelectorAll('.ghost').length >= 3) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'ghost';
+    const size = rand(34, 64);
+    ghost.style.width = `${size}px`;
+    ghost.style.height = `${size * 1.2}px`;
+    ghost.innerHTML = `<div class="ghost__inner">${GHOST_SVG}</div>`;
+    seasonLayer.appendChild(ghost);
+
+    const x = rand(0.05, 0.85) * window.innerWidth;
+    const drift = rand(-80, 80);
+    ghost.animate([
+      { transform: `translate(${x}px, ${window.innerHeight + 40}px)`, opacity: 0 },
+      { opacity: 0.55, offset: 0.15 },
+      { opacity: 0.55, offset: 0.8 },
+      { transform: `translate(${x + drift}px, -120px)`, opacity: 0 },
+    ], { duration: rand(14000, 20000), easing: 'linear' }).onfinish = () => ghost.remove();
+  }
+
+  // Стайка маленьких летучих мышей проносится по небу
+  function spawnBatFlock() {
+    if (document.hidden) return;
+    const fromLeft = Math.random() < 0.5;
+    const baseY = rand(0.08, 0.5) * window.innerHeight;
+    const count = Math.round(rand(4, 7));
+    for (let i = 0; i < count; i++) {
+      const bat = document.createElement('div');
+      bat.className = 'flock-bat ufo--bat';
+      bat.innerHTML = BAT_SVG;
+      seasonLayer.appendChild(bat);
+      const y = baseY + rand(-50, 50);
+      const startX = fromLeft ? -60 - i * 40 : window.innerWidth + 20 + i * 40;
+      const endX = fromLeft ? window.innerWidth + 60 : -100;
+      bat.animate([
+        { transform: `translate(${startX}px, ${y}px)` },
+        { transform: `translate(${(startX + endX) / 2}px, ${y - rand(20, 60)}px)` },
+        { transform: `translate(${endX}px, ${y + rand(-30, 30)}px)` },
+      ], { duration: rand(6000, 8500), delay: i * 120, easing: 'ease-in-out' }).onfinish = () => bat.remove();
+    }
+  }
+
+  // Команда boo: огромный призрак с воплем пролетает через экран
+  function ghostScare() {
+    if (reducedMotion()) return;
+    const ghost = document.createElement('div');
+    ghost.className = 'ghost ghost--scare';
+    ghost.innerHTML = `<div class="ghost__inner">${GHOST_SVG}</div>`;
+    document.body.appendChild(ghost);
+    const y = window.innerHeight * 0.3;
+    ghost.animate([
+      { transform: `translate(-260px, ${y}px) scale(0.6)`, opacity: 0 },
+      { transform: `translate(${window.innerWidth * 0.35}px, ${y - 40}px) scale(1.15)`, opacity: 0.9, offset: 0.45 },
+      { transform: `translate(${window.innerWidth + 40}px, ${y + 30}px) scale(0.8)`, opacity: 0 },
+    ], { duration: 2200, easing: 'ease-in-out' }).onfinish = () => ghost.remove();
+  }
+
+  if (!reducedMotion()) {
+    if (window.SEASON === 'halloween') {
+      setInterval(spawnGhost, 7000);
+      setTimeout(spawnGhost, 2500);
+      setInterval(spawnBatFlock, 32000);
+      setTimeout(spawnBatFlock, 9000);
+    }
+  }
+
+  // Украшение на окне терминала: паутинка в углу или снежная шапка
+  const terminalBox = document.getElementById('terminal');
+  if (window.SEASON && terminalBox) {
+    terminalBox.insertAdjacentHTML('beforeend', window.Effects.seasonDeco());
+  }
+
   // Для отладки в консоли: Fx.launchUfo() — запустить НЛО прямо сейчас
-  window.Fx = { burst, launchUfo };
+  window.Fx = { burst, launchUfo, ghostScare };
 })();

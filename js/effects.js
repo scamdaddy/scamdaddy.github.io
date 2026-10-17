@@ -342,6 +342,32 @@ window.Effects = (function () {
     });
   }
 
+  /* ---------- Сезонное украшение для карточек и терминала ----------
+     Хэллоуин — паутинка в правом верхнем углу, Новый год — снежная шапка с сосульками. */
+  function seasonDeco() {
+    if (window.SEASON === 'halloween') {
+      return `
+        <span class="season-deco season-deco--web" aria-hidden="true">
+          <svg viewBox="0 0 50 50" width="100%" height="100%">
+            <g stroke="rgba(255, 255, 255, 0.4)" stroke-width="0.8" fill="none">
+              <path d="M50 0 L10 40 M50 0 L28 48 M50 0 L2 22"/>
+              <path d="M38 0 Q42 7 50 12 M26 0 Q32 15 50 25 M14 0 Q22 24 50 37"/>
+            </g>
+          </svg>
+        </span>`;
+    }
+    if (window.SEASON === 'newyear') {
+      return `
+        <span class="season-deco season-deco--snow" aria-hidden="true">
+          <svg viewBox="0 0 100 14" preserveAspectRatio="none" width="100%" height="100%">
+            <path d="M0 7 Q5 1 12 5 T26 5 T40 6 T55 4 T70 6 T85 5 T100 7 L100 9 Q97 13 94 9
+                     Q90 14 86 9 L60 9 Q57 13 54 9 L30 9 Q27 12 24 9 L0 9 Z" fill="#f8fafc"/>
+          </svg>
+        </span>`;
+    }
+    return '';
+  }
+
   /* ---------- Всплывающая подсказка ----------
      Неоновая плашка в углу, сама исчезает через несколько секунд.
      Одновременно показывается только одна. */
@@ -366,6 +392,6 @@ window.Effects = (function () {
 
   return {
     typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition, toast,
-    decryptTitle, retitle, waveLetters,
+    decryptTitle, retitle, waveLetters, seasonDeco,
   };
 })();

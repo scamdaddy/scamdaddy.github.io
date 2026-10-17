@@ -10,6 +10,9 @@ window.Terminal = (function () {
 
   // Команды, которые показываются в help и дополняются по Tab
   const PUBLIC = ['help', 'about', 'projects', 'play', 'links', 'lang', 'clear'];
+  // Сезонные команды: показываются в help и дополняются по Tab только в свой сезон
+  const SEASON_COMMANDS = { halloween: ['boo', 'treat'], newyear: ['tree', 'snow'] };
+  const seasonCommands = () => SEASON_COMMANDS[window.SEASON] || [];
   const RUNAWAY_URL = 'https://runaway-rose.vercel.app/';
 
   // Секретные команды, которые считаются в «найдено секретов»
@@ -91,6 +94,10 @@ window.Terminal = (function () {
       });
       print(app.t('term.helpHint'), 'term-muted');
       print(secretsLine('term.secrets'), 'term-trophy');
+      if (seasonCommands().length) {
+        const list = seasonCommands().map((cmd) => `<span class="term-cmd">${cmd}</span>`).join(', ');
+        print(`${app.t(`season.commands.${window.SEASON}`)} ${list}`);
+      }
     },
 
     about() {
@@ -199,6 +206,53 @@ window.Terminal = (function () {
       print(app.t('term.money.end'), 'term-error');
     },
 
+    // ---------- Сезонные команды (работают только в свой сезон, см. js/season.js) ----------
+
+    boo() {
+      if (window.SEASON !== 'halloween') return print(app.t('season.sleep.halloween'), 'term-muted');
+      print(app.t('season.boo'), 'term-hack');
+      window.Fx.ghostScare();
+    },
+
+    treat() {
+      if (window.SEASON !== 'halloween') return print(app.t('season.sleep.halloween'), 'term-muted');
+      print(app.t('season.treat'));
+      if (!reducedMotion()) moneyRain(3000, { emojis: ['🍬', '🍭', '🍫', '🎃'], emojiShare: 1 });
+    },
+
+    tree() {
+      if (window.SEASON !== 'newyear') return print(app.t('season.sleep.newyear'), 'term-muted');
+      // Ёлка из символов: o и * — мигающие игрушки разных цветов
+      const tree = [
+        '      ★',
+        '     /o\\',
+        '    /*.o\\',
+        '   /o.*.*\\',
+        '  /.*o.*.o\\',
+        ' /*.o.*.o.*\\',
+        '     |||',
+      ];
+      const bulbs = ['#ff3b5c', '#22e5ff', '#ffe066', '#ff4fd8', '#5dffb0'];
+      const html = tree.map((line) => Array.from(line).map((ch) => {
+        if (ch === '★') return '<span class="term-star">★</span>';
+        if (ch === 'o' || ch === '*') {
+          const color = bulbs[Math.floor(Math.random() * bulbs.length)];
+          const delay = (Math.random() * 1.5).toFixed(2);
+          return `<span class="term-bulb" style="color: ${color}; animation-delay: ${delay}s">${ch}</span>`;
+        }
+        if (ch === '|') return `<span class="term-trunk">${ch}</span>`;
+        return ch === ' ' ? ' ' : `<span class="term-tree">${app.esc(ch)}</span>`;
+      }).join('')).join('\n');
+      print(html);
+      print(app.t('season.tree'), 'term-trophy');
+    },
+
+    snow() {
+      if (window.SEASON !== 'newyear') return print(app.t('season.sleep.newyear'), 'term-muted');
+      print(app.t('season.snow'));
+      window.starfield.blizzard(6000);
+    },
+
     exit() {
       close();
     },
@@ -233,7 +287,7 @@ window.Terminal = (function () {
 
   function autocomplete() {
     const value = input.value.trim().toLowerCase();
-    const matches = PUBLIC.filter((cmd) => cmd.startsWith(value));
+    const matches = PUBLIC.concat(seasonCommands()).filter((cmd) => cmd.startsWith(value));
     if (matches.length === 1) {
       input.value = matches[0];
     } else if (matches.length > 1) {
@@ -356,9 +410,12 @@ window.Terminal = (function () {
   }
 
   // ---------- Секрет: денежный дождь ----------
-  // Сверху падают неоновые $ и 💸, кружатся и покачиваются
+  // Сверху падают неоновые $ и 💸, кружатся и покачиваются.
+  // Тот же дождь из конфет — для команды treat: moneyRain(3000, { emojis: ['🍬', '🍭'], emojiShare: 1 })
 
-  function moneyRain(duration) {
+  function moneyRain(duration, options = {}) {
+    const emojis = options.emojis || ['💸'];
+    const emojiShare = options.emojiShare !== undefined ? options.emojiShare : 0.3;
     const canvas = document.createElement('canvas');
     canvas.className = 'fx-overlay';
     document.body.appendChild(canvas);
@@ -377,7 +434,7 @@ window.Terminal = (function () {
       angle: Math.random() * Math.PI,
       spin: (Math.random() - 0.5) * 0.006,
       sway: Math.random() * Math.PI * 2,
-      emoji: Math.random() < 0.3,
+      emoji: Math.random() < emojiShare ? emojis[Math.floor(Math.random() * emojis.length)] : '',
       color: colors[Math.floor(Math.random() * colors.length)],
     }));
 
@@ -402,7 +459,7 @@ window.Terminal = (function () {
         if (b.emoji) {
           ctx.font = `${b.size}px sans-serif`;
           ctx.shadowBlur = 0;
-          ctx.fillText('💸', 0, 0);
+          ctx.fillText(b.emoji, 0, 0);
         } else {
           ctx.font = `900 ${b.size}px Orbitron, sans-serif`;
           ctx.fillStyle = b.color;
@@ -439,6 +496,16 @@ window.Terminal = (function () {
     print(app.t('term.welcome'), 'term-muted');
     // Сезонное поздравление (даты — в js/season.js)
     if (window.SEASON) print(app.t(`season.${window.SEASON}`), 'term-trophy');
+    // В декабре — сколько дней до Нового года, в январе — поздравление
+    if (window.SEASON === 'newyear') {
+      const now = new Date();
+      if (now.getMonth() === 11) {
+        const days = Math.ceil((new Date(now.getFullYear() + 1, 0, 1) - now) / 86400000);
+        print(app.t('season.countdown').replace('{days}', days), 'term-trophy');
+      } else {
+        print(app.t('season.happy'), 'term-trophy');
+      }
+    }
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();

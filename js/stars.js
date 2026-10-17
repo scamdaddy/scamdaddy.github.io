@@ -268,9 +268,13 @@
     const cy = height * (small ? 0.16 : 0.22) - (animated ? mouse.y * MOUSE_SHIFT * depth + scroll * SCROLL_SHIFT * depth : 0);
     if (cy < -r * 3) return; // уехала за верх экрана — не рисуем
 
-    // На Хэллоуин вместо планеты — светящаяся тыква
+    // На Хэллоуин вместо планеты — светящаяся тыква, на Новый год — ёлочный шар
     if (SEASON === 'halloween') {
       drawPumpkin(cx, cy, r, time, animated);
+      return;
+    }
+    if (SEASON === 'newyear') {
+      drawBauble(cx, cy, r, time, animated);
       return;
     }
 
@@ -389,6 +393,180 @@
     ctx.restore();
   }
 
+  // ---------- Глаза в темноте (Хэллоуин) ----------
+  // Иногда в тёмном углу неба открывается пара светящихся глаз, моргает и исчезает
+  const eyes = [];
+  let nextEyesAt = 0;
+
+  function spawnEyes() {
+    eyes.push({
+      x: rand(width * 0.05, width * 0.95),
+      y: rand(height * 0.1, height * 0.9),
+      size: rand(2.5, 4.5),
+      life: 0,
+      duration: rand(2600, 4000),
+      color: Math.random() < 0.5 ? '#ffe066' : '#a3ff3d',
+    });
+  }
+
+  function drawEyes(dt) {
+    for (let i = eyes.length - 1; i >= 0; i--) {
+      const e = eyes[i];
+      e.life += dt;
+      const t = e.life / e.duration;
+      if (t >= 1) {
+        eyes.splice(i, 1);
+        continue;
+      }
+      // Плавно появляются и гаснут, а посередине дважды моргают
+      const fade = Math.min(t * 6, 1, (1 - t) * 6);
+      const blink = (t > 0.38 && t < 0.42) || (t > 0.48 && t < 0.52) ? 0.1 : 1;
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = e.color;
+      ctx.shadowColor = e.color;
+      ctx.shadowBlur = 10;
+      [-1, 1].forEach((side) => {
+        ctx.beginPath();
+        ctx.ellipse(e.x + side * e.size * 2.2, e.y, e.size, e.size * 0.75 * blink, side * 0.25, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // ---------- Ёлочный шар (Новый год) ----------
+  function drawBauble(cx, cy, r, time, animated) {
+    const swing = animated ? Math.sin(time * 0.0012) * 0.08 : 0;
+    ctx.save();
+    // Шар висит на ниточке от верха экрана и чуть покачивается
+    ctx.translate(cx, 0);
+    ctx.rotate(swing);
+    const y = cy;
+    ctx.globalAlpha = 0.6;
+    ctx.strokeStyle = '#ffe066';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, y - r * 1.15);
+    ctx.stroke();
+
+    // Колпачок
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#d4a017';
+    ctx.fillRect(-r * 0.2, y - r * 1.15, r * 0.4, r * 0.25);
+
+    // Сам шар
+    const ball = ctx.createRadialGradient(-r * 0.35, y - r * 0.4, r * 0.1, 0, y, r);
+    ball.addColorStop(0, '#ff8fb3');
+    ball.addColorStop(0.5, '#e11d48');
+    ball.addColorStop(1, '#4c0519');
+    ctx.fillStyle = ball;
+    ctx.shadowColor = 'rgba(225, 29, 72, 0.8)';
+    ctx.shadowBlur = r * 0.7;
+    ctx.beginPath();
+    ctx.arc(0, y, r * 0.95, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // Золотые узоры-полоски и блик
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, y, r * 0.95, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.strokeStyle = '#ffe066';
+    ctx.lineWidth = Math.max(1.5, r * 0.06);
+    ctx.globalAlpha = 0.85;
+    [-0.3, 0.25].forEach((k) => {
+      ctx.beginPath();
+      for (let x = -r; x <= r; x += 4) {
+        const wave = y + k * r + Math.sin(x / (r * 0.25)) * r * 0.08;
+        if (x === -r) ctx.moveTo(x, wave);
+        else ctx.lineTo(x, wave);
+      }
+      ctx.stroke();
+    });
+    ctx.globalAlpha = 0.5;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.ellipse(-r * 0.4, y - r * 0.45, r * 0.18, r * 0.1, -0.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // ---------- Фейерверки (Новый год) ----------
+  // Ракета взлетает снизу и рассыпается цветными искрами.
+  // Клик по пустому небу тоже запускает салют (js/fx.js)
+  const rockets = [];
+  const embers = [];
+  let nextRocketAt = 0;
+  const FIREWORK_COLORS = ['#ff4fd8', '#22e5ff', '#ffe066', '#5dffb0', '#c084fc', '#ff6b6b'];
+
+  function launchRocket() {
+    rockets.push({
+      x: rand(width * 0.15, width * 0.85),
+      y: height + 10,
+      targetY: rand(height * 0.12, height * 0.45),
+      speed: rand(0.55, 0.8),
+    });
+  }
+
+  function firework(x, y) {
+    if (reducedMotionQuery.matches) return;
+    const color = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
+    const second = FIREWORK_COLORS[Math.floor(Math.random() * FIREWORK_COLORS.length)];
+    const count = isWeak ? 40 : 70;
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + rand(-0.05, 0.05);
+      const speed = rand(0.08, 0.32);
+      embers.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 0,
+        duration: rand(900, 1500),
+        color: i % 3 ? color : second,
+      });
+    }
+  }
+
+  function drawFireworks(dt) {
+    for (let i = rockets.length - 1; i >= 0; i--) {
+      const r = rockets[i];
+      r.y -= r.speed * dt;
+      ctx.globalAlpha = 0.9;
+      ctx.drawImage(sprites['#ffffff'], r.x - 5, r.y - 5, 10, 10);
+      ctx.globalAlpha = 0.35;
+      ctx.drawImage(sprites['#ffffff'], r.x - 3, r.y + 8, 6, 6);
+      if (r.y <= r.targetY) {
+        rockets.splice(i, 1);
+        firework(r.x, r.y);
+      }
+    }
+    for (let i = embers.length - 1; i >= 0; i--) {
+      const e = embers[i];
+      e.life += dt;
+      if (e.life >= e.duration) {
+        embers.splice(i, 1);
+        continue;
+      }
+      e.vy += 0.00012 * dt; // искры потихоньку падают
+      e.vx *= 0.992;
+      e.vy *= 0.992;
+      e.x += e.vx * dt;
+      e.y += e.vy * dt;
+      const fade = 1 - e.life / e.duration;
+      ctx.globalAlpha = fade;
+      ctx.fillStyle = e.color;
+      ctx.shadowColor = e.color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+  }
+
   // ---------- Снег (Новый год) ----------
   // Мягкие снежинки падают поверх звёзд и чуть покачиваются
   let snow = [];
@@ -407,12 +585,38 @@
     }));
   }
 
+  // Метель (команда snow в терминале): на время снег идёт втрое гуще и быстрее
+  let blizzardUntil = 0;
+
+  function blizzard(ms) {
+    if (reducedMotionQuery.matches || SEASON !== 'newyear') return;
+    blizzardUntil = performance.now() + ms;
+    for (let i = 0; i < 260; i++) {
+      snow.push({
+        x: Math.random() * width,
+        y: -Math.random() * height,
+        r: rand(0.8, 2.6),
+        speed: rand(0.05, 0.12),
+        sway: Math.random() * Math.PI * 2,
+        swaySpeed: rand(0.001, 0.003),
+        alpha: rand(0.5, 1),
+        extra: true, // лишние снежинки исчезнут, когда метель кончится
+      });
+    }
+  }
+
   function drawSnow(dt, animated) {
-    for (const f of snow) {
+    const storm = performance.now() < blizzardUntil ? 2.5 : 1;
+    for (let i = snow.length - 1; i >= 0; i--) {
+      const f = snow[i];
       if (animated) {
-        f.y += f.speed * dt * (0.6 + f.r * 0.3); // крупные падают быстрее
+        f.y += f.speed * dt * (0.6 + f.r * 0.3) * storm; // крупные падают быстрее
         f.sway += f.swaySpeed * dt;
         if (f.y > height + 6) {
+          if (f.extra && storm === 1) {
+            snow.splice(i, 1);
+            continue;
+          }
           f.y = -6;
           f.x = Math.random() * width;
         }
@@ -676,6 +880,21 @@
     drawStars(now, true);
     if (snow.length) drawSnow(dt, true);
     drawShootingStars(dt);
+
+    // Сезонные эффекты неба
+    if (SEASON === 'halloween') {
+      if (now > nextEyesAt) {
+        spawnEyes();
+        nextEyesAt = now + rand(4000, 8000);
+      }
+      if (eyes.length) drawEyes(dt);
+    } else if (SEASON === 'newyear') {
+      if (now > nextRocketAt) {
+        launchRocket();
+        nextRocketAt = now + rand(4500, 9000);
+      }
+      if (rockets.length || embers.length) drawFireworks(dt);
+    }
     if (novas.length) drawNovas(dt);
     if (formation) drawFormation(dt, now);
     ctx.globalAlpha = 1;
@@ -738,5 +957,7 @@
     supernova,
     formWord,
     skipFormation,
+    firework,
+    blizzard,
   };
 })();
