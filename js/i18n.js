@@ -7,7 +7,7 @@
 window.I18N = {
   ru: {
     'meta.title': 'Artem — @scamdaddy',
-    'meta.description': 'вайбкодер. делаю игры и полезные штуки вместе с ИИ.',
+    'meta.description': 'вайбкодер. мечтаю заработать много денег и исчезнуть, а пока — просто чиллю.',
     'lang.label': 'язык',
 
     'hero.greeting': [
@@ -75,7 +75,7 @@ window.I18N = {
 
   en: {
     'meta.title': 'Artem — @scamdaddy',
-    'meta.description': 'vibe coder. i make games and useful stuff together with AI.',
+    'meta.description': 'vibe coder. dreaming of making a lot of money and disappearing, for now — just chilling.',
     'lang.label': 'language',
 
     'hero.greeting': [
