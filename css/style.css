@@ -481,6 +481,50 @@ main,
   margin: 0;
 }
 
+/* ---------- Шкала прогресса ---------- */
+
+.about__value--progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.progress {
+  display: block;
+  width: min(220px, 100%);
+  height: 12px;
+  padding: 2px;
+  border: 1px solid rgba(168, 85, 247, 0.6);
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.08);
+  box-shadow: 0 0 10px -2px rgba(168, 85, 247, 0.6);
+}
+
+.progress__fill {
+  display: block;
+  width: var(--value);
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--pink), var(--violet-bright));
+  box-shadow: 0 0 8px var(--pink), 0 0 16px rgba(255, 79, 216, 0.5);
+  transition: width 1.6s var(--ease-out) 0.5s;
+}
+
+/* Пока строка не выехала на экран — шкала пустая, потом плавно заполняется */
+.js .about__row:not(.is-visible) .progress__fill {
+  width: 0;
+}
+
+.progress__value {
+  color: var(--pink);
+  text-shadow: 0 0 6px var(--pink);
+}
+
+.progress__note {
+  color: var(--muted);
+}
+
 /* ---------- Ссылки ---------- */
 
 .footer__links {
@@ -586,9 +630,31 @@ main,
   position: absolute;
 }
 
+/* Голографический блик: радужная полоса, которая едет вслед за курсором (--gx) */
+.card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 79, 216, 0.1) 45%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(34, 229, 255, 0.1) 55%,
+    transparent 65%
+  );
+  background-size: 250% 100%;
+  background-position: var(--gx, 50%) 0;
+  opacity: 0;
+  transition: opacity 0.35s;
+  pointer-events: none;
+}
+
 @media (hover: hover) {
+  /* 3D-наклон: углы --rx/--ry задаёт JS по положению курсора */
   .card:hover {
-    transform: translateY(-6px);
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(-6px);
     border-color: rgba(192, 132, 252, 0.85);
     box-shadow:
       0 0 0 1px rgba(192, 132, 252, 0.25),
@@ -597,7 +663,8 @@ main,
       inset 0 0 30px rgba(168, 85, 247, 0.08);
   }
 
-  .card:hover::before {
+  .card:hover::before,
+  .card:hover::after {
     opacity: 1;
   }
 }
@@ -871,8 +938,8 @@ main,
   display: none;
 }
 
-/* «Матрица» из секретной команды hack */
-.matrix {
+/* Полноэкранные эффекты секретных команд: «матрица» (hack) и денежный дождь (money) */
+.fx-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
@@ -880,8 +947,14 @@ main,
   transition: opacity 0.6s;
 }
 
-.matrix.is-fading {
+.fx-overlay.is-fading {
   opacity: 0;
+}
+
+.term-money {
+  color: #5dffb0;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(93, 255, 176, 0.7);
 }
 
 /* ---------- Глитч-переход при клике на проект ---------- */

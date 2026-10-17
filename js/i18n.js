@@ -14,7 +14,7 @@ window.I18N = {
       'привет! я <b class="hl">Artem</b>, в сети — <span class="accent-pink">@scamdaddy</span>.',
       'я вайбкодер: придумываю идеи и превращаю их в работающие проекты вместе с <span class="accent-cyan">ИИ</span>.',
       'мечтаю заработать много денег и исчезнуть.',
-      'а пока — делаю игры и полезные штуки.',
+      'а пока — просто чиллю.',
     ],
     'hero.scroll': 'листай вниз ↓',
 
@@ -27,6 +27,8 @@ window.I18N = {
       { label: 'сейчас изучаю', tags: ['веб-разработку', 'работу с ИИ', 'иностранный язык'] },
       { label: 'люблю', tags: ['видеоигры', 'музыку', 'путешествия'] },
       { label: 'мечта', text: 'заработать много денег и исчезнуть' },
+      // progress — число от 0 до 100, рисуется неоновой шкалой
+      { label: 'прогресс', progress: 10, text: 'не умею копить' },
     ],
 
     'links.title': 'ссылки',
@@ -60,6 +62,10 @@ window.I18N = {
     'term.coffee.start': 'завариваю кофе…',
     'term.coffee.level': 'кофеин',
     'term.coffee.done': 'готово. теперь можно кодить до утра ☕',
+    'term.money.start': 'запускаю денежный станок…',
+    'term.money.label': 'заработано',
+    'term.money.locale': 'ru-RU',
+    'term.money.end': 'ой, это был сон. баланс: $0 💀',
     'term.hack': [
       'подключаюсь к мейнфрейму…',
       'обхожу файрвол…',
@@ -76,7 +82,7 @@ window.I18N = {
       'hi! i\'m <b class="hl">Artem</b>, online — <span class="accent-pink">@scamdaddy</span>.',
       'i\'m a vibe coder: i come up with ideas and turn them into working projects together with <span class="accent-cyan">AI</span>.',
       'my dream is to make a lot of money and disappear.',
-      'for now — i make games and useful stuff.',
+      'for now — just chilling.',
     ],
     'hero.scroll': 'scroll down ↓',
 
@@ -88,6 +94,7 @@ window.I18N = {
       { label: 'currently learning', tags: ['web development', 'working with AI', 'a foreign language'] },
       { label: 'i love', tags: ['video games', 'music', 'travelling'] },
       { label: 'dream', text: 'make a lot of money and disappear' },
+      { label: 'progress', progress: 10, text: 'can\'t save money' },
     ],
 
     'links.title': 'links',
@@ -121,6 +128,10 @@ window.I18N = {
     'term.coffee.start': 'brewing coffee…',
     'term.coffee.level': 'caffeine',
     'term.coffee.done': 'done. now we can code till sunrise ☕',
+    'term.money.start': 'starting the money printer…',
+    'term.money.label': 'earned',
+    'term.money.locale': 'en-US',
+    'term.money.end': 'oops, it was a dream. balance: $0 💀',
     'term.hack': [
       'connecting to the mainframe…',
       'bypassing the firewall…',

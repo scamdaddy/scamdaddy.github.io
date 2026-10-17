@@ -170,18 +170,44 @@ window.Effects = (function () {
     items.forEach((el) => observer.observe(el));
   }
 
-  /* ---------- Пятно света на карточках ----------
-     Передаём в CSS координаты мыши внутри карточки (--mx, --my).
+  /* ---------- Наведение на карточки: пятно света и 3D-наклон ----------
+     Передаём в CSS положение мыши внутри карточки:
+       --mx, --my — для пятна света
+       --rx, --ry — углы наклона (край под курсором «проседает»)
+       --gx       — сдвиг голографического блика
      Один обработчик на весь список — работает и для новых карточек. */
-  function spotlight(container) {
+  const MAX_TILT = 8; // градусов
+
+  function cardHover(container) {
     if (!container) return;
+
     container.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
       const card = e.target.closest('.card');
       if (!card) return;
+
       const rect = card.getBoundingClientRect();
-      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
-      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      card.style.setProperty('--mx', `${x}px`);
+      card.style.setProperty('--my', `${y}px`);
+
+      if (reducedMotion()) return;
+      // Положение курсора от -0.5 до 0.5 относительно центра карточки
+      const px = x / rect.width - 0.5;
+      const py = y / rect.height - 0.5;
+      card.style.setProperty('--rx', `${(-py * MAX_TILT * 2).toFixed(2)}deg`);
+      card.style.setProperty('--ry', `${(px * MAX_TILT * 2).toFixed(2)}deg`);
+      card.style.setProperty('--gx', `${(px + 0.5) * 100}%`);
     }, { passive: true });
+
+    // Курсор ушёл — карточка плавно выпрямляется (переход описан в CSS)
+    container.addEventListener('pointerout', (e) => {
+      const card = e.target.closest('.card');
+      if (!card || card.contains(e.relatedTarget)) return;
+      card.style.removeProperty('--rx');
+      card.style.removeProperty('--ry');
+    });
   }
 
   /* ---------- Глитч-переход ----------
@@ -232,5 +258,5 @@ window.Effects = (function () {
     });
   }
 
-  return { typewriter, glitch, glitchOnce, reveal, spotlight, glitchTransition };
+  return { typewriter, glitch, glitchOnce, reveal, cardHover, glitchTransition };
 })();

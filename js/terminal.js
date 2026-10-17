@@ -53,7 +53,12 @@ window.Terminal = (function () {
 
     about() {
       app.t('about.items').forEach((item) => {
-        const value = item.tags ? item.tags.join(' • ') : item.text;
+        let value = item.tags ? item.tags.join(' • ') : item.text;
+        if (item.progress !== undefined) {
+          // Шкала из символов: каждые 10% — один квадратик
+          const filled = Math.round(item.progress / 10);
+          value = `[${'█'.repeat(filled)}${'░'.repeat(10 - filled)}] ${item.progress}% — ${item.text}`;
+        }
         print(`<span class="term-accent">&gt; ${app.esc(item.label)}:</span> ${app.esc(value)}`);
       });
     },
@@ -123,6 +128,33 @@ window.Terminal = (function () {
       print(second, 'term-hack');
       if (!reducedMotion()) await matrixRain(3000);
       print(last, 'term-hack');
+    },
+
+    async money() {
+      print(app.t('term.money.start'), 'term-hack');
+      const counter = print('', 'term-money');
+      const label = app.t('term.money.label');
+      const format = new Intl.NumberFormat(app.t('term.money.locale'));
+      const target = 1000000;
+
+      if (!reducedMotion()) moneyRain(3200);
+
+      // Счётчик разгоняется от $0 до миллиона: сначала быстро, под конец медленно
+      const duration = reducedMotion() ? 0 : 2600;
+      const start = performance.now();
+      await new Promise((resolve) => {
+        function step(now) {
+          const t = duration ? Math.min((now - start) / duration, 1) : 1;
+          const eased = 1 - Math.pow(1 - t, 3);
+          counter.textContent = `${label}: $${format.format(Math.round(target * eased))}`;
+          if (t < 1) requestAnimationFrame(step);
+          else resolve();
+        }
+        requestAnimationFrame(step);
+      });
+
+      await sleep(900);
+      print(app.t('term.money.end'), 'term-error');
     },
 
     exit() {
@@ -231,7 +263,7 @@ window.Terminal = (function () {
   function matrixRain(duration) {
     return new Promise((resolve) => {
       const canvas = document.createElement('canvas');
-      canvas.className = 'matrix';
+      canvas.className = 'fx-overlay';
       document.body.appendChild(canvas);
 
       const ctx = canvas.getContext('2d');
@@ -271,6 +303,75 @@ window.Terminal = (function () {
 
       requestAnimationFrame(draw);
     });
+  }
+
+  // ---------- Секрет: денежный дождь ----------
+  // Сверху падают неоновые $ и 💸, кружатся и покачиваются
+
+  function moneyRain(duration) {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'fx-overlay';
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    const width = (canvas.width = window.innerWidth);
+    const height = (canvas.height = window.innerHeight);
+    const colors = ['#5dffb0', '#c084fc', '#ff4fd8', '#22e5ff'];
+    const count = Math.min(70, Math.round(width / 18));
+
+    const bills = Array.from({ length: count }, () => ({
+      x: Math.random() * width,
+      y: -Math.random() * height,          // стартуют выше экрана, чтобы падали «волной»
+      speed: 0.15 + Math.random() * 0.25,  // пикселей в миллисекунду
+      size: 18 + Math.random() * 22,
+      angle: Math.random() * Math.PI,
+      spin: (Math.random() - 0.5) * 0.006,
+      sway: Math.random() * Math.PI * 2,
+      emoji: Math.random() < 0.3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+    }));
+
+    const start = performance.now();
+    let last = start;
+
+    function draw(now) {
+      const dt = Math.min(now - last, 50);
+      last = now;
+      ctx.clearRect(0, 0, width, height);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (const b of bills) {
+        b.y += b.speed * dt;
+        b.angle += b.spin * dt;
+        b.sway += 0.003 * dt;
+
+        ctx.save();
+        ctx.translate(b.x + Math.sin(b.sway) * 20, b.y);
+        ctx.rotate(b.angle);
+        if (b.emoji) {
+          ctx.font = `${b.size}px sans-serif`;
+          ctx.shadowBlur = 0;
+          ctx.fillText('💸', 0, 0);
+        } else {
+          ctx.font = `900 ${b.size}px Orbitron, sans-serif`;
+          ctx.fillStyle = b.color;
+          ctx.shadowColor = b.color;
+          ctx.shadowBlur = 12;
+          ctx.fillText('$', 0, 0);
+        }
+        ctx.restore();
+      }
+
+      if (now - start < duration) {
+        requestAnimationFrame(draw);
+      } else {
+        canvas.classList.add('is-fading');
+        setTimeout(() => canvas.remove(), 600);
+      }
+    }
+
+    requestAnimationFrame(draw);
   }
 
   // ---------- Запуск ----------

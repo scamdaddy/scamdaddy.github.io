@@ -132,11 +132,28 @@
     }).join('');
   }
 
+  // Неоновая шкала: заполняется, когда строка выезжает на экран (см. CSS .progress)
+  function progressHtml(item) {
+    return `
+      <span class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+            aria-valuenow="${item.progress}" aria-label="${esc(item.label)}">
+        <span class="progress__fill" style="--value: ${item.progress}%"></span>
+      </span>
+      <span class="progress__value">${item.progress}%</span>
+      <span class="progress__note">— ${esc(item.text)}</span>`;
+  }
+
+  function aboutValueHtml(item) {
+    if (item.tags) return tagsHtml(item.tags);
+    if (item.progress !== undefined) return progressHtml(item);
+    return esc(item.text);
+  }
+
   function renderAbout() {
     const items = t('about.items').map((item) => `
       <div class="about__row reveal">
         <dt class="about__label"><span class="accent-cyan">&gt;</span> ${esc(item.label)}</dt>
-        <dd class="about__value">${item.tags ? tagsHtml(item.tags) : esc(item.text)}</dd>
+        <dd class="about__value${item.progress !== undefined ? ' about__value--progress' : ''}">${aboutValueHtml(item)}</dd>
       </div>`).join('');
     document.getElementById('about-list').innerHTML = `<dl class="about">${items}</dl>`;
   }
@@ -175,7 +192,7 @@
   // ---------- Запуск ----------
 
   renderAll();
-  window.Effects.spotlight(document.getElementById('project-list'));
+  window.Effects.cardHover(document.getElementById('project-list'));
 
   // Глитч-переход при клике на кнопку проекта: сначала экран «ломается»,
   // потом открывается новая вкладка
