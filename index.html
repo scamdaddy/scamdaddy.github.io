@@ -82,6 +82,12 @@
   <main>
     <!-- Приветствие -->
     <section class="hero" id="hero">
+      <!-- Пиксельный аватар: картинку собирает js/main.js из карты пикселей.
+           Клик — случайная фраза -->
+      <button class="avatar reveal" id="avatar" type="button" data-i18n-label="avatar.label" aria-label="пиксельный аватар Artem в тёмных очках">
+        <span class="avatar__frame" aria-hidden="true"></span>
+        <span class="avatar__inner" id="avatar-pixels" aria-hidden="true"></span>
+      </button>
       <p class="hero__prompt reveal"><span class="accent-cyan">~/artem</span> $ whoami</p>
       <!-- Глитч: копии текста из data-text сдвигаются в розовом и голубом цвете -->
       <h1 class="hero__name glitch reveal" data-text="Artem">Artem</h1>
@@ -100,6 +106,23 @@
     <section class="section" id="about">
       <h2 class="section__title reveal"><span class="section__hash">//</span> <span data-i18n="about.title">обо мне</span></h2>
       <div id="about-list"></div>
+
+      <!-- Статистика: числа крутятся от нуля, когда блок появляется на экране -->
+      <h3 class="stats__title reveal" data-i18n="stats.title">в цифрах</h3>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <!-- Призыв написать -->
+    <section class="section" id="collab">
+      <div class="cta reveal">
+        <p class="cta__kicker" data-i18n="cta.kicker">// есть идея?</p>
+        <h2 class="cta__title" data-i18n="cta.title">давай сделаем что-то вместе</h2>
+        <p class="cta__text" data-i18n="cta.text"></p>
+        <!-- Адрес подставляется из js/projects.js (ссылка telegram) -->
+        <a class="btn cta__btn" id="cta-link" href="https://t.me/scamdaddy" target="_blank" rel="noopener noreferrer">
+          <span data-i18n="cta.button">написать в telegram</span> <span class="btn__arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
     </section>
 
     <!-- Мини-терминал (js/terminal.js). По клавише ~ всплывает поверх страницы -->

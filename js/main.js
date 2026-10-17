@@ -164,6 +164,75 @@
     document.getElementById('about-list').innerHTML = `<dl class="about">${items}</dl>`;
   }
 
+  // ---------- Аватар ----------
+  // Картинка 16×16 пикселей: каждая буква — свой цвет, точка — пусто.
+  // Чтобы перерисовать аватар, достаточно поменять буквы в карте.
+  const AVATAR_MAP = [
+    '....HHHHHHHH....',
+    '...HhhhhhhhhH...',
+    '..HhhHHHHHHhhH..',
+    '..HhHSSSSSSHhH..',
+    '.HhHSSSSSSSSHhH.',
+    '.HhSGGGSSGGGShH.',
+    '.HhSGgGGGGgGShH.',
+    '.HhSSGGSSGGSShH.',
+    '.HhSSSSSSSSSShH.',
+    '.HhSSSSSMMMSShH.',
+    '..HhsSSSSSSshH..',
+    '..HhHssssssHhH..',
+    '.BBHhHHCCHHhHBB.',
+    'BBBBBBCBBCBBBBBB',
+    'BBPBBBCBBCBBBPBB',
+    'BBPBBBBBBBBBBPBB',
+  ];
+  const AVATAR_COLORS = {
+    H: '#4c1d95', // капюшон
+    h: '#a855f7', // светлая кромка капюшона
+    S: '#f2c6a0', // лицо
+    s: '#d9a27e', // тень на лице
+    G: '#120822', // тёмные очки
+    g: '#22e5ff', // блик на очках
+    M: '#be185d', // ухмылка
+    B: '#2e1065', // худи
+    C: '#ece6ff', // шнурки капюшона
+    P: '#ff4fd8', // неоновая полоска
+  };
+
+  function renderAvatar() {
+    const rects = [];
+    AVATAR_MAP.forEach((row, y) => {
+      Array.from(row).forEach((ch, x) => {
+        if (AVATAR_COLORS[ch]) {
+          const glint = ch === 'g' ? ' class="avatar__glint"' : '';
+          rects.push(`<rect${glint} x="${x}" y="${y}" width="1.02" height="1.02" fill="${AVATAR_COLORS[ch]}"/>`);
+        }
+      });
+    });
+    document.getElementById('avatar-pixels').innerHTML =
+      `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`;
+  }
+
+  // ---------- Статистика ----------
+  function statNumber(item) {
+    if (item.count === 'projects') return window.PROJECTS.length;
+    if (item.count === 'secrets') return window.Terminal.secretsTotal();
+    return item.count;
+  }
+
+  function renderStats() {
+    document.getElementById('stats').innerHTML = t('stats.items').map((item) => {
+      // data-count — до какого числа крутить счётчик (js/effects.js)
+      const value = item.value !== undefined
+        ? esc(item.value)
+        : `${esc(item.prefix || '')}<span data-count="${statNumber(item)}">0</span>${esc(item.suffix || '')}`;
+      return `
+        <div class="stat reveal">
+          <span class="stat__value">${value}</span>
+          <span class="stat__label">${esc(item.label)}</span>
+        </div>`;
+    }).join('');
+  }
+
   function renderLinks() {
     document.getElementById('social-links').innerHTML = window.SOCIAL_LINKS.map((link) => `
       <a class="social" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(link.name)}">
@@ -178,6 +247,7 @@
     renderProjects();
     renderAbout();
     renderLinks();
+    renderStats();
     window.Effects.reveal(document);
   }
 
@@ -201,6 +271,23 @@
   renderAll();
   window.Effects.cardHover(document.getElementById('project-list'));
   window.Effects.waveLetters(document.querySelector('.hero__name'));
+  renderAvatar();
+
+  // Ссылка в блоке «давай сделаем вместе» — та же, что telegram в футере
+  const telegram = window.SOCIAL_LINKS.find((link) => link.name === 'telegram');
+  if (telegram) document.getElementById('cta-link').href = telegram.url;
+
+  // Клик по аватару — случайная фраза (но не та же, что в прошлый раз)
+  let lastQuip = -1;
+  document.getElementById('avatar').addEventListener('click', () => {
+    const quips = t('avatar.quips');
+    let index;
+    do index = Math.floor(Math.random() * quips.length);
+    while (index === lastQuip && quips.length > 1);
+    lastQuip = index;
+    window.Effects.toast(esc(quips[index]), 3000);
+    window.Effects.glitchOnce(document.getElementById('avatar'));
+  });
 
   // Глитч-переход при клике на кнопку проекта: сначала экран «ломается»,
   // потом открывается новая вкладка

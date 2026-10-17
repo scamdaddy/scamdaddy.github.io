@@ -252,7 +252,7 @@
      Только для мыши и только если анимации не выключены.
      ========================================================= */
 
-  const SNAP = '.btn, .social__icon, .terminal-fab, .lang-switch__btn, .progress-trigger, .terminal__close, .ufo';
+  const SNAP = '.btn, .social__icon, .terminal-fab, .lang-switch__btn, .progress-trigger, .terminal__close, .ufo, .avatar';
   const HOVER = 'a, button, input, .tag, .card';
 
   if (finePointer && !reducedMotion()) {
