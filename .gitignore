@@ -1,0 +1,16 @@
+# системные файлы Windows и macOS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# настройки редакторов
+.vscode/
+.idea/
+
+# локальные настройки Claude Code
+.claude/
+
+# временные файлы
+*.log
+*.tmp
+node_modules/
