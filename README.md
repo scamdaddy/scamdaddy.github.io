@@ -1,2 +1,2 @@
-artemvib.github.io
+scamdaddy.github.io
     (website)

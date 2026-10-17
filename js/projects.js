@@ -52,12 +52,12 @@ window.PROJECTS = [
     },
     tags: ['html', 'css', 'javascript', 'current'],
     button: { ru: 'исходный код', en: 'source code' },
-    url: 'https://github.com/artemvib/artemvib.github.io',
+    url: 'https://github.com/scamdaddy/scamdaddy.github.io',
   },
 ];
 
 // Ссылки внизу страницы (их же покажет команда links в терминале)
 window.SOCIAL_LINKS = [
-  { name: 'github', url: 'https://github.com/artemvib', icon: 'github' },
+  { name: 'github', url: 'https://github.com/scamdaddy', icon: 'github' },
   { name: 'telegram', url: 'https://t.me/scamdaddy', icon: 'telegram' },
 ];
