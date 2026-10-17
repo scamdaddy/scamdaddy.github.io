@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Artem — @scamdaddy</title>
+  <meta name="description" content="вайбкодер. делаю игры и полезные штуки вместе с ИИ.">
+  <meta name="theme-color" content="#05030a">
+
+  <!-- Шрифты: Orbitron для заголовков (латиница), Unbounded подхватывает кириллицу,
+       JetBrains Mono для основного текста -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&family=Unbounded:wght@500;700;900&display=swap">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Звёздное небо рисуется на этом canvas (js/stars.js) -->
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <a class="topbar__logo" href="#hero">@scamdaddy<span class="topbar__cursor">_</span></a>
+
+    <!-- Переключатель языка (заработает на этапе 5) -->
+    <div class="lang-switch" role="group" aria-label="язык / language">
+      <button class="lang-switch__btn is-active" type="button" data-lang="ru">ru</button>
+      <button class="lang-switch__btn" type="button" data-lang="en">en</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Приветствие -->
+    <section class="hero" id="hero">
+      <p class="hero__prompt"><span class="accent-cyan">~/artem</span> $ whoami</p>
+      <h1 class="hero__name" data-text="Artem">Artem</h1>
+      <!-- Этап 2: сюда будет печататься приветствие -->
+      <p class="hero__greeting" id="greeting">звёзды уже на месте. остальное подвезут на следующем этапе 🚧</p>
+      <a class="hero__scroll" href="#projects">листай вниз ↓</a>
+    </section>
+
+    <!-- Проекты: карточки создаются из js/projects.js (этап 2) -->
+    <section class="section" id="projects">
+      <h2 class="section__title"><span class="section__hash">//</span> проекты</h2>
+      <div class="cards" id="project-list">
+        <div class="placeholder">тут скоро появятся карточки проектов</div>
+      </div>
+    </section>
+
+    <!-- Обо мне (этап 2) -->
+    <section class="section" id="about">
+      <h2 class="section__title"><span class="section__hash">//</span> обо мне</h2>
+      <div id="about-list">
+        <div class="placeholder">а тут — немного обо мне</div>
+      </div>
+    </section>
+
+    <!-- Место под анонимные сообщения — отдельный этап, пока скрыто -->
+    <section class="section" id="anon-messages" hidden></section>
+  </main>
+
+  <footer class="footer" id="links">
+    <!-- Иконки GitHub и Telegram (этап 2) -->
+    <div class="footer__links" id="social-links"></div>
+
+    <!-- Место под счётчик просмотров — отдельный этап -->
+    <div class="footer__views" id="views-counter" hidden></div>
+
+    <p class="footer__credit">сделано Artem вместе с Claude ❤️</p>
+  </footer>
+
+  <!-- Место под мини-терминал (этап 4) -->
+  <div id="terminal-root"></div>
+
+  <script src="js/stars.js"></script>
+</body>
+</html>
