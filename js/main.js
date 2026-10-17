@@ -72,7 +72,7 @@
       const num = String(i + 1).padStart(2, '0');
       const note = p.note ? `<p class="project__note">${esc(pick(p.note))}</p>` : '';
       return `
-        <article class="card project">
+        <article class="card project reveal">
           <span class="project__num" aria-hidden="true">${num}</span>
           <h3 class="project__title">${esc(pick(p.title))}</h3>
           <p class="project__desc">${esc(pick(p.desc))}</p>
@@ -87,7 +87,7 @@
 
   function renderAbout() {
     const items = t('about.items').map((item) => `
-      <div class="about__row">
+      <div class="about__row reveal">
         <dt class="about__label"><span class="accent-cyan">&gt;</span> ${esc(item.label)}</dt>
         <dd class="about__value">${item.tags ? tagsHtml(item.tags) : esc(item.text)}</dd>
       </div>`).join('');
@@ -108,11 +108,13 @@
     renderProjects();
     renderAbout();
     renderLinks();
+    window.Effects.reveal(document);
   }
 
   // ---------- Запуск ----------
 
   renderAll();
+  window.Effects.spotlight(document.getElementById('project-list'));
 
   // Глитч включаем, когда загрузится шрифт имени
   const fontsReady = document.fonts ? document.fonts.ready : Promise.resolve();

@@ -137,5 +137,49 @@ window.Effects = (function () {
     schedule();
   }
 
-  return { typewriter, glitch };
+  /* ---------- Появление при прокрутке ----------
+     IntersectionObserver сообщает, когда блок заезжает в экран —
+     это намного дешевле, чем проверять каждый кадр прокрутки.
+     Блоки, появившиеся одновременно, выезжают по очереди «лесенкой». */
+  let observer = null;
+
+  function reveal(root) {
+    const items = (root || document).querySelectorAll('.reveal:not(.is-visible)');
+
+    if (reducedMotion() || !('IntersectionObserver' in window)) {
+      items.forEach((el) => el.classList.add('is-visible'));
+      return;
+    }
+
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => {
+        let order = 0;
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target;
+          el.style.setProperty('--reveal-delay', `${Math.min(order++ * 90, 450)}ms`);
+          el.classList.add('is-visible');
+          observer.unobserve(el); // показали один раз — больше не следим
+        });
+      }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+    }
+
+    items.forEach((el) => observer.observe(el));
+  }
+
+  /* ---------- Пятно света на карточках ----------
+     Передаём в CSS координаты мыши внутри карточки (--mx, --my).
+     Один обработчик на весь список — работает и для новых карточек. */
+  function spotlight(container) {
+    if (!container) return;
+    container.addEventListener('pointermove', (e) => {
+      const card = e.target.closest('.card');
+      if (!card) return;
+      const rect = card.getBoundingClientRect();
+      card.style.setProperty('--mx', `${e.clientX - rect.left}px`);
+      card.style.setProperty('--my', `${e.clientY - rect.top}px`);
+    }, { passive: true });
+  }
+
+  return { typewriter, glitch, reveal, spotlight };
 })();

@@ -7,6 +7,9 @@
   <meta name="description" content="вайбкодер. делаю игры и полезные штуки вместе с ИИ.">
   <meta name="theme-color" content="#05030a">
 
+  <!-- Метка «JavaScript работает»: только тогда прячем блоки до появления при прокрутке -->
+  <script>document.documentElement.classList.add('js');</script>
+
   <!-- Шрифты: Orbitron для заголовков (латиница), Unbounded подхватывает кириллицу,
        JetBrains Mono для основного текста -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,23 +35,23 @@
   <main>
     <!-- Приветствие -->
     <section class="hero" id="hero">
-      <p class="hero__prompt"><span class="accent-cyan">~/artem</span> $ whoami</p>
+      <p class="hero__prompt reveal"><span class="accent-cyan">~/artem</span> $ whoami</p>
       <!-- Глитч: копии текста из data-text сдвигаются в розовом и голубом цвете -->
-      <h1 class="hero__name glitch" data-text="Artem">Artem</h1>
+      <h1 class="hero__name glitch reveal" data-text="Artem">Artem</h1>
       <!-- Приветствие печатается само (js/effects.js), тексты — в js/i18n.js -->
-      <div class="hero__greeting" id="greeting"></div>
-      <a class="hero__scroll" href="#projects" data-i18n="hero.scroll">листай вниз ↓</a>
+      <div class="hero__greeting reveal" id="greeting"></div>
+      <a class="hero__scroll reveal" href="#projects" data-i18n="hero.scroll">листай вниз ↓</a>
     </section>
 
     <!-- Проекты: карточки создаются из js/projects.js -->
     <section class="section" id="projects">
-      <h2 class="section__title"><span class="section__hash">//</span> <span data-i18n="projects.title">проекты</span></h2>
+      <h2 class="section__title reveal"><span class="section__hash">//</span> <span data-i18n="projects.title">проекты</span></h2>
       <div class="cards" id="project-list"></div>
     </section>
 
     <!-- Обо мне -->
     <section class="section" id="about">
-      <h2 class="section__title"><span class="section__hash">//</span> <span data-i18n="about.title">обо мне</span></h2>
+      <h2 class="section__title reveal"><span class="section__hash">//</span> <span data-i18n="about.title">обо мне</span></h2>
       <div id="about-list"></div>
     </section>
 
@@ -58,12 +61,12 @@
 
   <footer class="footer" id="links">
     <!-- Иконки GitHub и Telegram (данные — в js/projects.js) -->
-    <nav class="footer__links" id="social-links" aria-label="ссылки"></nav>
+    <nav class="footer__links reveal" id="social-links" aria-label="ссылки"></nav>
 
     <!-- Место под счётчик просмотров — отдельный этап -->
     <div class="footer__views" id="views-counter" hidden></div>
 
-    <p class="footer__credit" data-i18n="footer.credit">сделано Artem вместе с Claude ❤️</p>
+    <p class="footer__credit reveal" data-i18n="footer.credit">сделано Artem вместе с Claude ❤️</p>
   </footer>
 
   <!-- Место под мини-терминал (этап 4) -->
