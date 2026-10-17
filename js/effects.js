@@ -184,5 +184,53 @@ window.Effects = (function () {
     }, { passive: true });
   }
 
-  return { typewriter, glitch, glitchOnce, reveal, spotlight };
+  /* ---------- Глитч-переход ----------
+     На ~0.4 секунды экран «ломается»: поверх страницы мелькают цветные полосы,
+     которые инвертируют цвета под собой, а сама страница дрожит.
+     Каждые 50 мс полосы перекладываются в новые случайные места. */
+  const TRANSITION_MS = 420;
+  const BAR_COLORS = ['#ffffff', '#ff4fd8', '#22e5ff', '#a855f7'];
+
+  function glitchTransition() {
+    return new Promise((resolve) => {
+      if (reducedMotion()) {
+        resolve();
+        return;
+      }
+
+      const layer = document.createElement('div');
+      layer.className = 'glitch-screen';
+      layer.setAttribute('aria-hidden', 'true');
+
+      const bars = Array.from({ length: 9 }, () => {
+        const bar = document.createElement('i');
+        layer.appendChild(bar);
+        return bar;
+      });
+
+      function shuffleBars() {
+        bars.forEach((bar) => {
+          bar.style.top = `${rand(0, 100)}%`;
+          bar.style.height = `${rand(0.5, 9)}%`;
+          bar.style.background = BAR_COLORS[Math.floor(Math.random() * BAR_COLORS.length)];
+          bar.style.transform = `translateX(${rand(-12, 12)}%)`;
+          bar.style.opacity = rand(0.5, 1).toFixed(2);
+        });
+      }
+
+      shuffleBars();
+      document.body.appendChild(layer);
+      document.body.classList.add('is-glitching-page');
+
+      const timer = setInterval(shuffleBars, 50);
+      setTimeout(() => {
+        clearInterval(timer);
+        layer.remove();
+        document.body.classList.remove('is-glitching-page');
+        resolve();
+      }, TRANSITION_MS);
+    });
+  }
+
+  return { typewriter, glitch, glitchOnce, reveal, spotlight, glitchTransition };
 })();

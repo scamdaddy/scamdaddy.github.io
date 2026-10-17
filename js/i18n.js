@@ -26,7 +26,7 @@ window.I18N = {
       { label: 'чем пишу', text: 'Claude Code и собственной головой. я — идеи и решения, ИИ — тысячи строк кода' },
       { label: 'сейчас изучаю', tags: ['веб-разработку', 'работу с ИИ', 'иностранный язык'] },
       { label: 'люблю', tags: ['видеоигры', 'музыку', 'путешествия'] },
-      { label: 'мечта', text: 'приложение, которым пользуются тысячи людей' },
+      { label: 'мечта', text: 'заработать много денег и исчезнуть' },
     ],
 
     'links.title': 'ссылки',
@@ -87,7 +87,7 @@ window.I18N = {
       { label: 'what i code with', text: 'Claude Code and my own head. i bring ideas and decisions, AI brings thousands of lines of code' },
       { label: 'currently learning', tags: ['web development', 'working with AI', 'a foreign language'] },
       { label: 'i love', tags: ['video games', 'music', 'travelling'] },
-      { label: 'dream', text: 'an app used by thousands of people' },
+      { label: 'dream', text: 'make a lot of money and disappear' },
     ],
 
     'links.title': 'links',

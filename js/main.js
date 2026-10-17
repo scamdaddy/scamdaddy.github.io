@@ -177,6 +177,21 @@
   renderAll();
   window.Effects.spotlight(document.getElementById('project-list'));
 
+  // Глитч-переход при клике на кнопку проекта: сначала экран «ломается»,
+  // потом открывается новая вкладка
+  document.getElementById('project-list').addEventListener('click', (e) => {
+    const link = e.target.closest('.project__btn');
+    // Ctrl/Shift/средняя кнопка мыши — не мешаем, пусть браузер сделает своё
+    if (!link || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+
+    window.Effects.glitchTransition().then(() => {
+      const tab = window.open(link.href, '_blank');
+      if (tab) tab.opener = null; // новая вкладка не получит доступ к нашей странице
+      else window.location.href = link.href; // браузер заблокировал вкладку — открываем здесь
+    });
+  });
+
   // Плотный фон у шапки, как только страницу начали прокручивать
   const topbar = document.querySelector('.topbar');
   const updateTopbar = () => topbar.classList.toggle('is-scrolled', window.scrollY > 10);

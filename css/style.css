@@ -884,7 +884,43 @@ main,
   opacity: 0;
 }
 
+/* ---------- Глитч-переход при клике на проект ---------- */
+
+.glitch-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  overflow: hidden;
+  pointer-events: none;
+  /* Полосы развёртки, как на старом мониторе */
+  background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 3px);
+  animation: glitch-flash 0.42s steps(1) forwards;
+}
+
+/* Цветные полосы инвертируют цвета под собой */
+.glitch-screen i {
+  position: absolute;
+  left: -15%;
+  width: 130%;
+  mix-blend-mode: difference;
+}
+
+/* Страница дрожит и раздваивается на розовый и голубой */
+.is-glitching-page main,
+.is-glitching-page .topbar {
+  animation: glitch-shake 0.1s steps(2) infinite;
+  filter: drop-shadow(-4px 0 0 rgba(255, 79, 216, 0.7)) drop-shadow(4px 0 0 rgba(34, 229, 255, 0.7));
+}
+
 /* ---------- Анимации ---------- */
+
+/* Короткие вспышки в начале и в конце перехода */
+@keyframes glitch-flash {
+  0% { background-color: rgba(255, 255, 255, 0.25); }
+  15% { background-color: transparent; }
+  80% { background-color: rgba(168, 85, 247, 0.25); }
+  90% { background-color: rgba(5, 3, 10, 0.9); }
+}
 
 @keyframes terminal-in {
   from { opacity: 0; transform: translateY(30px) scale(0.98); }
