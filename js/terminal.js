@@ -16,8 +16,14 @@ window.Terminal = (function () {
   const SECRETS = ['sudo', 'coffee', 'hack', 'money'];
   const SECRETS_KEY = 'secrets';
 
-  // Слова «про деньги»: если ввести такое — терминал подскажет команду money
-  const MONEY_WORDS = /cash|rich|dollar|bank|salary|earn|coin|деньг|денег|бабк|бабл|доллар|банк|зарплат|зараб|мани|рубл|монет|богат|\$/i;
+  // Подсказки к секретам: если ввести похожее слово, терминал намекнёт на команду.
+  // Проверяются по порядку, срабатывает первая подходящая
+  const SECRET_HINTS = [
+    { cmd: 'sudo', emoji: '🔐', words: /password|root|admin|access|пароль|админ|права|доступ|^su$/i },
+    { cmd: 'coffee', emoji: '☕', words: /coff|tea|tired|sleep|energy|latte|espresso|кофе|кофей|чай|устал|спать|сонн|энерг|латте|эспрессо/i },
+    { cmd: 'hack', emoji: '🕶️', words: /matrix|hacker|virus|exploit|mainframe|firewall|neo|матриц|взлом|хакер|вирус|нео/i },
+    { cmd: 'money', emoji: '💸', words: /cash|rich|dollar|bank|salary|earn|coin|деньг|денег|бабк|бабл|доллар|банк|зарплат|зараб|мани|рубл|монет|богат|\$/i },
+  ];
 
   // Найденные секреты храним в браузере, чтобы счёт не сбрасывался
   function loadFound() {
@@ -213,8 +219,11 @@ window.Terminal = (function () {
       // Когда команда доиграет (у секретных бывают анимации) — засчитываем секрет
       Promise.resolve(command()).then(() => markSecret(name));
     } else {
-      const key = MONEY_WORDS.test(text) ? 'term.moneyHint' : 'term.unknown';
-      print(app.t(key).replace('{cmd}', app.esc(name)), 'term-error');
+      const hint = SECRET_HINTS.find((h) => h.words.test(text));
+      const message = hint
+        ? app.t('term.secretHint').replace('{emoji}', hint.emoji).replace('{target}', hint.cmd)
+        : app.t('term.unknown');
+      print(message.replace('{cmd}', app.esc(name)), 'term-error');
     }
   }
 
