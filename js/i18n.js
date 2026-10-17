@@ -13,7 +13,7 @@ window.I18N = {
     'hero.greeting': [
       'привет! я <b class="hl">Artem</b>, в сети — <span class="accent-pink">@scamdaddy</span>.',
       'я вайбкодер: придумываю идеи и превращаю их в работающие проекты вместе с <span class="accent-cyan">ИИ</span>.',
-      'мечтаю сделать приложение, которым будут пользоваться тысячи людей.',
+      'мечтаю заработать много денег и исчезнуть.',
       'а пока — делаю игры и полезные штуки.',
     ],
     'hero.scroll': 'листай вниз ↓',
@@ -75,7 +75,7 @@ window.I18N = {
     'hero.greeting': [
       'hi! i\'m <b class="hl">Artem</b>, online — <span class="accent-pink">@scamdaddy</span>.',
       'i\'m a vibe coder: i come up with ideas and turn them into working projects together with <span class="accent-cyan">AI</span>.',
-      'my dream is to build an app used by thousands of people.',
+      'my dream is to make a lot of money and disappear.',
       'for now — i make games and useful stuff.',
     ],
     'hero.scroll': 'scroll down ↓',
