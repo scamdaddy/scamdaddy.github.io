@@ -42,18 +42,6 @@ window.I18N = {
       'тсс… я тут инкогнито 🕶️',
     ],
 
-    // ---------- Статистика ----------
-    // count — число (счётчик крутится от 0), value — готовая строка (например ∞).
-    // projects и secrets считаются сами: из js/projects.js и из секретов терминала
-    'stats.title': 'в цифрах',
-    'stats.items': [
-      { count: 'projects', label: 'проекты в портфолио' },
-      { count: 'secrets', label: 'секретов на этом сайте' },
-      { value: '∞', label: 'выпито кофе' },
-      { count: 99, suffix: '+', label: 'багов стали фичами' },
-      { count: 0, prefix: '$', label: 'заработано (пока)' },
-    ],
-
     // ---------- Призыв ----------
     'cta.kicker': '// есть идея?',
     'cta.title': 'давай сделаем что-то вместе',
@@ -143,16 +131,6 @@ window.I18N = {
       'this is my best angle',
       'real pixels, verified',
       'shh… i\'m incognito here 🕶️',
-    ],
-
-    // ---------- Stats ----------
-    'stats.title': 'in numbers',
-    'stats.items': [
-      { count: 'projects', label: 'projects in portfolio' },
-      { count: 'secrets', label: 'secrets on this site' },
-      { value: '∞', label: 'coffee consumed' },
-      { count: 99, suffix: '+', label: 'bugs turned into features' },
-      { count: 0, prefix: '$', label: 'earned (so far)' },
     ],
 
     // ---------- Call to action ----------

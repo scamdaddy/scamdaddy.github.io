@@ -457,5 +457,5 @@ window.Terminal = (function () {
     });
   }
 
-  return { init, run, open, close, moneyRain, markSecret, secretsTotal: () => SECRETS.length };
+  return { init, run, open, close, moneyRain, markSecret };
 })();

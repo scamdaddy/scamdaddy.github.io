@@ -214,27 +214,6 @@
       `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">${rects.join('')}</svg>`;
   }
 
-  // ---------- Статистика ----------
-  function statNumber(item) {
-    if (item.count === 'projects') return window.PROJECTS.length;
-    if (item.count === 'secrets') return window.Terminal.secretsTotal();
-    return item.count;
-  }
-
-  function renderStats() {
-    document.getElementById('stats').innerHTML = t('stats.items').map((item) => {
-      // data-count — до какого числа крутить счётчик (js/effects.js)
-      const value = item.value !== undefined
-        ? esc(item.value)
-        : `${esc(item.prefix || '')}<span data-count="${statNumber(item)}">0</span>${esc(item.suffix || '')}`;
-      return `
-        <div class="stat reveal">
-          <span class="stat__value">${value}</span>
-          <span class="stat__label">${esc(item.label)}</span>
-        </div>`;
-    }).join('');
-  }
-
   function renderLinks() {
     document.getElementById('social-links').innerHTML = window.SOCIAL_LINKS.map((link) => `
       <a class="social" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(link.name)}">
@@ -249,7 +228,6 @@
     renderProjects();
     renderAbout();
     renderLinks();
-    renderStats();
     window.Effects.reveal(document);
   }
 

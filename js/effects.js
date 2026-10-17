@@ -152,7 +152,6 @@ window.Effects = (function () {
     if (reducedMotion() || !('IntersectionObserver' in window)) {
       items.forEach((el) => {
         el.classList.add('is-visible');
-        el.querySelectorAll('[data-count]').forEach(countUp);
       });
       return;
     }
@@ -166,7 +165,6 @@ window.Effects = (function () {
           el.style.setProperty('--reveal-delay', `${Math.min(order++ * 90, 450)}ms`);
           el.classList.add('is-visible');
           if (el.classList.contains('section__title')) decryptTitle(el);
-          el.querySelectorAll('[data-count]').forEach(countUp);
           observer.unobserve(el); // показали один раз — больше не следим
         });
       }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
@@ -261,24 +259,6 @@ window.Effects = (function () {
         resolve();
       }, TRANSITION_MS);
     });
-  }
-
-  /* ---------- Счётчик ----------
-     Число крутится от 0 до data-count: сначала быстро, под конец медленно. */
-  function countUp(el) {
-    const target = Number(el.dataset.count) || 0;
-    if (reducedMotion() || target === 0) {
-      el.textContent = target;
-      return;
-    }
-    const duration = 1400;
-    const start = performance.now();
-    function step(now) {
-      const t = Math.min((now - start) / duration, 1);
-      el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
-      if (t < 1) requestAnimationFrame(step);
-    }
-    requestAnimationFrame(step);
   }
 
   /* ---------- Расшифровка заголовков ----------
